@@ -104,6 +104,7 @@ const VerifyOtp = asyncHandler(async (req, res) => {
       // Check if the OTP matches
       if (user.otp === otp) {
           user.status = "VERIFIED";
+          user.otp=null;
           await user.save();
           console.log("OTP verification successful.");
            
