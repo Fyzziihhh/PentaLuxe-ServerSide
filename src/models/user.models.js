@@ -1,4 +1,3 @@
-
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -13,15 +12,15 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true,
       lowercase: true,
-      unique: true,
     },
     password: {
       type: String,
-      required: true,
     },
-    address: [{
-      type:String
-    }],
+    address: [
+      {
+        type: String,
+      },
+    ],
     isBlocked: {
       type: Boolean,
     },
@@ -29,15 +28,19 @@ const userSchema = mongoose.Schema(
       type: Number,
     },
     status: {
-      type:String,
-      enum: ["PENDING","VERIFIED", "BLOCKED"],
-      default:"PENDING"
+      type: String,
+      enum: ["PENDING", "VERIFIED", "BLOCKED"],
+      default: "PENDING",
     },
-    refreshToken:{
-      type:String,
+    refreshToken: {
+      type: String,
     },
-    otp:{
-      type:String,
+    otp: {
+      type: String,
+    },
+    Product:{
+      type:mongoose.Schema.Types.ObjectId,
+      ref:"Product"
     }
   },
   { timestamps: true }
@@ -64,7 +67,7 @@ userSchema.methods.generateAccessToken = function () {
       _id: this._id,
       email: this.email,
     },
-    process.env.ACCESS_TOKEN_SCERET,
+    process.env.ACCESS_TOKEN_SECRET,
     {
       expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
     }
@@ -78,7 +81,7 @@ userSchema.methods.generateRefreshToken = function () {
     {
       _id: this._id,
     },
-    process.env.REFRESH_TOKEN_SCERET,
+    process.env.REFRESH_TOKEN_SECRET,
     {
       expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
     }

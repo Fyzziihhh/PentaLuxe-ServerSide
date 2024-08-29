@@ -1,7 +1,0 @@
-POST http//:localhost:7000/api/user/register
-Content-Type: "application/json"
-{
-    username:"faizal",
-    email:"faizi@gmail.com",
-    password:"helo"
-}
