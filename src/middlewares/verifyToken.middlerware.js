@@ -3,9 +3,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import userModel from '../models/user.models.js';
 
 const verifyToken = asyncHandler(async (req, res, next) => {
-    console.log("helo")
     const authHeader = req.headers.authorization;
-    console.log(authHeader)
     if (authHeader && authHeader.startsWith("Bearer ")) {
         const token = authHeader.split(' ')[1];
 

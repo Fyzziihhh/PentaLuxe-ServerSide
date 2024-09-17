@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
+import { isArray } from 'util';
 
 cloudinary.config({ 
     cloud_name: 'dhbwlpe6i',
@@ -8,34 +9,42 @@ cloudinary.config({
 });
 
 const uploadOnCloudinary = async (localFilePath) => {
-    console.log("Inside the upload function", localFilePath);
-
     try {
         if (!localFilePath) return null;
 
-        console.log("Local file path provided");
+    if(!Array.isArray(localFilePath)) {
+        localFilePath=[localFilePath]
+        console.log("Inside the upload function", localFilePath);
+        
+    }
+    console.log(localFilePath)
+ 
 
-        // Upload the file to Cloudinary
-        const response = await cloudinary.uploader.upload(localFilePath, {
-            resource_type: "auto"
-        });
+        // console.log("Local file path provided");
 
-        console.log("Upload response:", response);
+        // // Upload the file to Cloudinary
+      const response= await Promise.all(
+        localFilePath.map(async(file)=>(
+            await cloudinary.uploader.upload(file.path, {
+               resource_type: "auto"
+           })
+
+        ))
+      )
+        // console.log("Upload response:", response);
 
         // File has been uploaded successfully
-        console.log("File is uploaded on Cloudinary:", response.url);
-        return response;
+      return  response.map(file=>file.secure_url);
+    
     } catch (error) {
-        console.error("Upload failed:", error.message); // Log the error message
-        try {
-            // Remove the local file if it exists
-            if (fs.existsSync(localFilePath)) {
-                fs.unlinkSync(localFilePath);
+        localFilePath.forEach((file)=>{
+            try {
+                fs.unlinkSync(file.path)
+            } catch (fileError) {
+                console.error("Error in file Deletion : ",error.message )
             }
-        } catch (fileError) {
-            console.error("Failed to delete local file:", fileError.message);
-        }
-        return null;
+        })
+       return null
     }
 };
 

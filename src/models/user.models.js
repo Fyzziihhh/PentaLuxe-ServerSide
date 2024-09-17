@@ -16,27 +16,31 @@ const userSchema = mongoose.Schema(
     password: {
       type: String,
     },
-    address: [
+    addresses: [
       {
         type: String,
       },
     ],
-    isBlocked: {
+    isVerified: {
       type: Boolean,
+      default:false
     },
     phone: {
       type: Number,
     },
     status: {
       type: String,
-      enum: ["PENDING", "VERIFIED", "BLOCKED"],
-      default: "PENDING",
+      enum: ["ACTIVE","BLOCKED"],
+      default: "ACTIVE",
     },
     refreshToken: {
       type: String,
     },
     otp: {
       type: String,
+    },
+    otpExpiryTime: {
+      type: Date
     },
     Product:{
       type:mongoose.Schema.Types.ObjectId,

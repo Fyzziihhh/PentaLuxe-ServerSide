@@ -11,19 +11,12 @@ const productSchema = mongoose.Schema(
       ref: "Category",
       required: true,
     },
-    productImages:[ {
-      //   imageId: {
-      //     type: String,
-      //     required: true,
-      //   },
-      //   url: {
-      //     type: String,
-      //     required: true,
-      //   },
-      // },
-      type: String,
-      required: true
-    }],
+    productImages: [
+      {
+        type: String,
+        required: true,
+      },
+    ],
     productDescription: {
       type: String,
       required: true,
@@ -34,7 +27,7 @@ const productSchema = mongoose.Schema(
     },
     gender: {
       type: String,
-      enum: ["Male", "Female", "Unisex"],
+      enum: ["Men", "Women", "Unisex"],
     },
     productScentType: {
       type: String,
@@ -46,19 +39,18 @@ const productSchema = mongoose.Schema(
     },
     productVolumes: {
       type: Map,
-      to: Number,
+      of: String,
     },
     isBlocked: {
       type: Boolean,
       default: false,
-      required: true
-    }
+    },
   },
   {
     timestamps: true,
   }
 );
 
-const productModel = mongoose.model("Product", productSchema)
+const productModel = mongoose.model("Product", productSchema);
 
-export default productModel
+export default productModel;
