@@ -1,11 +1,12 @@
-import userModel from "../../models/user.models.js";
+import User from "../../models/user.models.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import passport from "passport";
-import { asyncHandler } from "../../utils/asyncHandler.js";
-import { sendOTPEmail } from "../../utils/EmailOTPSender.js";
+import { asyncHandler } from "../../helpers/asyncHandler.js";
+import { sendOTPEmail } from "../../helpers/EmailOTPSender.js";
 import { generateOtp } from "../../utils/GenerateOtp.js";
-import { generateAccesTokenAndRefreshToken } from "../../utils/GenerateTokens.js";
+import { generateAccesTokenAndRefreshToken } from "../../helpers/GenerateTokens.js";
+import { createResponse } from "../../helpers/responseHandler.js";
 
 // @desc Register a new user
 // @route POST /api/register
@@ -14,9 +15,9 @@ const registerUser = asyncHandler(async (req, res) => {
   const { username, email, password, phone } = req.body;
 
   // Check if user already exists
-  const userExist = await userModel.findOne({ email });
+  const userExist = await User.findOne({ email });
   if (userExist) {
-    return res.status(409).json({ message: "User Already Exists" });
+    return createResponse(res, 409, false, "User Already Exists");
   }
 
   // Generate OTP
@@ -28,12 +29,10 @@ const registerUser = asyncHandler(async (req, res) => {
     await sendOTPEmail(email, otp);
     console.log("OTP sent to:", email);
   } catch (error) {
-    return res
-      .status(500)
-      .json({ success: false, message: "Failed to send OTP email." });
+    return createResponse(res, 500, false, "Failed to send OTP email.");
   }
 
-  const user = await userModel.create({
+  const user = await User.create({
     username,
     email,
     password,
@@ -44,15 +43,13 @@ const registerUser = asyncHandler(async (req, res) => {
 
   console.log("user", user);
 
-  const createdUser = await userModel
-    .findById(user._id)
-    .select("-password -otp -refreshToken");
-  res.status(201).json({
-    success: true,
-    message: "User created successfully. Please verify your OTP.",
-    user: createdUser,
-  });
+  const createdUser = await User.findById(user._id).select(
+    "-password -otp -refreshToken"
+  );
+
+  return createResponse(res, 201, true, "User created successfully. Please verify your OTP.", createdUser);
 });
+
 
 // @desc verify Otp
 // @route POST /api/user/otp-verify
@@ -65,19 +62,14 @@ const VerifyOtp = asyncHandler(async (req, res) => {
 
   try {
     // Find the user by email
-    const user = await userModel.findOne({ email });
-    //Check if user not Found
+    const user = await User.findOne({ email });
+    // Check if user not found
     if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: "No account found with this email address.",
-      });
+      return createResponse(res, 400, false, "No account found with this email address.");
     }
 
     if (Date.now() > user.otpExpiryTime) {
-      return res
-        .status(400)
-        .json({ success: false, message: "OTP has Expired" });
+      return createResponse(res, 400, false, "OTP has expired.");
     }
 
     // Check if the OTP matches
@@ -87,30 +79,19 @@ const VerifyOtp = asyncHandler(async (req, res) => {
       await user.save();
       console.log("OTP verification successful.");
 
-      //generating accessToken and RefreshToken
-      const { accessToken, refreshToken } =
-        await generateAccesTokenAndRefreshToken(user._id);
-      return res.status(200).json({
-        success: true,
-        message: "OTP verification successfully completed.",
-        accessToken,
-        refreshToken,
-      });
+      // Generating accessToken and refreshToken
+      const { accessToken, refreshToken } = await generateAccesTokenAndRefreshToken(user._id);
+      return createResponse(res, 200, true, "OTP verification successfully completed.", { accessToken, refreshToken });
     } else {
       console.log("Invalid OTP provided.");
-      return res.status(400).json({
-        success: false,
-        message: "Invalid OTP. Please try again.",
-      });
+      return createResponse(res, 400, false, "Invalid OTP. Please try again.");
     }
   } catch (error) {
     console.error("Error verifying OTP:", error);
-    return res.status(500).json({
-      success: false,
-      message: "An error occurred during OTP verification.",
-    });
+    return createResponse(res, 500, false, "An error occurred during OTP verification.");
   }
 });
+
 
 // @desc resend otp
 // @route POST /api/user/resend-otp
@@ -118,13 +99,12 @@ const VerifyOtp = asyncHandler(async (req, res) => {
 
 const resendOtp = asyncHandler(async (req, res) => {
   const { email } = req.body;
-  const user = await userModel.findOne({ email });
+  const user = await User.findOne({ email });
+  
   if (!user) {
-    return res.status(404).json({
-      success: false,
-      message: "User not found",
-    });
+    return createResponse(res, 404, false, "User not found");
   }
+  
   const otp = generateOtp(4);
   user.otp = otp;
   user.otpExpiryTime = Date.now() + 5 * 60 * 1000;
@@ -134,22 +114,17 @@ const resendOtp = asyncHandler(async (req, res) => {
 
   try {
     await sendOTPEmail(email, otp);
-    res.status(200).json({
-      success: true,
-      message: `OTP sent successfully to ${email}`,
-    });
+    return createResponse(res, 200, true, `OTP sent successfully to ${email}`);
   } catch (error) {
     console.error("Error sending OTP email:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to send OTP email",
-    });
+    return createResponse(res, 500, false, "Failed to send OTP email");
   }
 });
 
+
 const logOutUser = asyncHandler(async (req, res) => {
   console.log("inside logout");
-  const user = await userModel.findByIdAndUpdate(
+  const user = await User.findByIdAndUpdate(
     req.user._id,
     {
       $unset: {
@@ -161,60 +136,58 @@ const logOutUser = asyncHandler(async (req, res) => {
     }
   );
 
-  res.json({ success: true, message: "User LogOut Successfully" });
+ return createResponse(res,200,true,"User Logout Successfully")
 });
 
 const logInUser = asyncHandler(async (req, res) => {
-  console.log("hkd");
   const { email, password } = req.body;
-  const user = await userModel.findOne({ email });
+
+  const user = await User.findOne({ email });
   if (!user) {
-    return res
-      .status(404)
-      .json({ success: false, message: "Invalid Email Or Password" });
+    return createResponse(res, 404, false, "Invalid Email Or Password");
   }
-  if (!user.isVerified)
-    return res.status(401).json({
-      success: false,
-      message: "Please verify your email to activate your account",
-    });
+  
+  if (!user.isVerified) {
+    return createResponse(res, 401, false, "Please verify your email to activate your account");
+  }
 
   const isMatch = user.isPasswordCorrect(password);
-
   if (!isMatch) {
-    return res
-      .status(401)
-      .json({ success: false, message: "Invalid Email Or Password" });
+    return createResponse(res, 401, false, "Invalid Email Or Password");
   }
 
-  const { accessToken, refreshToken } = await generateAccesTokenAndRefreshToken(
-    user._id
-  );
-
+  const { accessToken, refreshToken } = await generateAccesTokenAndRefreshToken(user._id);
+  
   user.refreshToken = refreshToken;
   await user.save();
-  return res.status(200).json({
-    success: true,
-    message: "user logged In Successfully",
+console.log("inside the login")
+  return createResponse(res, 200, true, "User logged in successfully", {
     accessToken,
     refreshToken,
   });
 });
 
+
 const googleAuth = asyncHandler(async (req, res) => {
   const { username, email } = req.body;
 
-  const userExist = await userModel.findOne({ email });
+  const userExist = await User.findOne({ email });
 
   if (userExist) {
-    console.log(userExist);
-    return res.status(200).json({
-      success: true,
-      message: "User Logged In Successfully ",
-    });
+    try {
+      const { accessToken, refreshToken } =
+        await generateAccesTokenAndRefreshToken(userExist._id);
+      return createResponse(res, 200, true, "User Logged In Successfully", {
+        accessToken,
+        refreshToken,
+      });
+    } catch (error) {
+      console.log("error", error);
+      return createResponse(res, 500, false, "Failed to generate tokens");
+    }
   }
 
-  const user = await userModel.create({
+  const user = await User.create({
     username,
     email,
     isVerified: true,
@@ -224,18 +197,17 @@ const googleAuth = asyncHandler(async (req, res) => {
   if (user) {
     const { accessToken, refreshToken } =
       await generateAccesTokenAndRefreshToken(user._id);
-
-    res.status(201).json({
-      success: true,
-      message: "User Signed Up Successfully",
+    console.log("tokenACC", accessToken);
+    return createResponse(res, 201, true, "User Signed Up Successfully", {
       user,
       accessToken,
       refreshToken,
     });
   } else {
-    res.status(500).json({ success: false, message: "Failed to create user" });
+    return createResponse(res, 500, false, "Failed to create user");
   }
 });
+
 
 export {
   registerUser,

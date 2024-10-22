@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
-import { uploadOnCloudinary } from "../../utils/cloudinary.js";
-import categoryModel from "../../models/category.model.js";
-import userModel from "../../models/user.models.js";
-import { asyncHandler } from "../../utils/asyncHandler.js";
+import { uploadOnCloudinary } from "../../helpers/cloudinary.js";
+import Category from "../../models/category.model.js";
+import User from "../../models/user.models.js";
+import { asyncHandler } from "../../helpers/asyncHandler.js";
 const adminLogin = (req, res) => {
   const { email, password } = req.body;
 
@@ -11,10 +11,11 @@ const adminLogin = (req, res) => {
     password === process.env.ADMIN_PASSWORD
   ) {
     req.session.isAdmin = true;
-    const token = jwt.sign(email, process.env.ACCESS_TOKEN_SECRET);
+    req.session.email=email
+    console.log(req.session)
+  
     return res.status(200).json({
       success: true,
-      adminToken: token,
       message: "Admin LoggedIn Successfully",
     });
   }
@@ -34,7 +35,7 @@ const uploadFilesAndAddCategory = async (req, res) => {
   }
 
   const categoryName = req.body.categoryName;
-  const category = await categoryModel.findOne({
+  const category = await Category.findOne({
     categoryName: { $regex: new RegExp(categoryName, "i") },
   });
   console.log("catedf", category);
@@ -48,7 +49,7 @@ const uploadFilesAndAddCategory = async (req, res) => {
   try {
     const response = await uploadOnCloudinary(req.file);
     console.log(response);
-    const createdCategory = await categoryModel.create({
+    const createdCategory = await Category.create({
       categoryName,
       categoryImage: response[0],
     });
@@ -68,7 +69,8 @@ const uploadFilesAndAddCategory = async (req, res) => {
 
 const getCategories = async (req, res) => {
   try {
-    const categories = await categoryModel.find().sort({ createdAt: -1 });
+
+    const categories = await Category.find().sort({ createdAt: -1 });
     if (!categories || categories.length === 0)
       return res.status(404).json({
         success: false,
@@ -93,7 +95,7 @@ const deleteCategory = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Category ID is required" });
     }
-    const deletedCategory = await categoryModel.findByIdAndDelete(id);
+    const deletedCategory = await Category.findByIdAndDelete(id);
 
     if (!deletedCategory) {
       return res

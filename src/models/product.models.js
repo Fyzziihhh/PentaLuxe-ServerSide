@@ -1,8 +1,10 @@
 import mongoose from "mongoose";
 
+
+
 const productSchema = mongoose.Schema(
   {
-    productName: {
+    Name: {
       type: String,
       required: true,
     },
@@ -11,36 +13,35 @@ const productSchema = mongoose.Schema(
       ref: "Category",
       required: true,
     },
-    productImages: [
+    Images: [
       {
         type: String,
         required: true,
       },
     ],
-    productDescription: {
+    Description: {
       type: String,
       required: true,
     },
-    productStockQuantity: {
-      type: Number,
-      required: true,
-    },
-    gender: {
+    Variants: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Variant",
+      },
+    ],
+    Gender: {
       type: String,
       enum: ["Men", "Women", "Unisex"],
     },
-    productScentType: {
+    ScentType: {
       type: String,
       required: true,
     },
-    productDiscountPrice: {
+    DiscountPercentage: {
       type: Number,
       requied: true,
     },
-    productVolumes: {
-      type: Map,
-      of: String,
-    },
+
     isBlocked: {
       type: Boolean,
       default: false,
@@ -51,6 +52,6 @@ const productSchema = mongoose.Schema(
   }
 );
 
-const productModel = mongoose.model("Product", productSchema);
+const Product = mongoose.model("Product", productSchema);
 
-export default productModel;
+export default Product;

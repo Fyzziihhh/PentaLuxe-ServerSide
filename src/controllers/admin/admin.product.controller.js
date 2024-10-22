@@ -1,31 +1,30 @@
-import { asyncHandler } from "../../utils/asyncHandler.js";
-import { uploadOnCloudinary } from "../../utils/cloudinary.js";
-import productModel from "../../models/product.models.js";
-import categoryModel from "../../models/category.model.js";
-
+import { asyncHandler } from "../../helpers/asyncHandler.js";
+import { uploadOnCloudinary } from "../../helpers/cloudinary.js";
+import Product from "../../models/product.models.js";
+import Category from "../../models/category.model.js";
+import qs from "qs";
+import { Variant } from "../../models/varient.model.js";
 const uploadFilesAndAddProducts = asyncHandler(async (req, res) => {
   try {
     console.log("Received request to upload files and add product");
-
-    // Extracting product details from the request body
+    const parsedBody = qs.parse(req.body);
     const {
-      productName,
+      Name,
       categoryName,
-      productScentType,
-      productDescription,
-      gender,
-      productStockQuantity,
-      productDiscountPrice,
-      productVolumes, // This should be an object initially
-    } = req.body;
+      ScentType,
+      Description,
+      Gender,
+      DiscountPercentage,
+      productVolumes,
+    } = parsedBody;
+    console.log(parsedBody);
+    console.log(productVolumes)
 
-    // Check if files are uploaded
     if (!req.files || req.files.length === 0) {
       return res
         .status(400)
         .json({ success: false, message: "No files uploaded" });
     }
-
     // Upload files to Cloudinary
     const response = await uploadOnCloudinary(req.files);
     if (!response || response.length === 0) {
@@ -33,41 +32,47 @@ const uploadFilesAndAddProducts = asyncHandler(async (req, res) => {
         .status(500)
         .json({ success: false, message: "File upload failed" });
     }
-
     // Find the category
-    const Category = await categoryModel.findOne({ categoryName });
-    if (!Category) {
+    const category = await Category.findOne({ categoryName });
+    if (!category) {
       return res
         .status(404)
         .json({ success: false, message: "Category Not Found" });
     }
-
-    // Convert productVolumes object to Map
-    const volumesMap = new Map(Object.entries(productVolumes));
-    console.log(volumesMap);
-
-    // Create a new product
-    const Product = await productModel.create({
-      productName,
-      productDescription,
-      productStockQuantity,
-      gender,
+    const product = await Product.create({
+      Name,
+      Description,
+      Gender,
       isBlocked: false,
-      productScentType,
-      productImages: response,
-      productDiscountPrice,
-      productVolumes: volumesMap, // Pass the converted Map here
-      CategoryId: Category._id,
+      ScentType,
+      Images: response,
+      DiscountPercentage,
+      CategoryId: category._id,
     });
+    
+    // Step 2: Prepare Variants Data
+    const productVolumesArray = Object.entries(productVolumes).map(
+      ([key, value]) => ({
+        productId: product._id, 
+        volume: key,
+        price: Number(value.price),
+        stock: Number(value.stock),
+      })
+    );
+    
+ 
+    const createdVariants = await Variant.create(productVolumesArray);
+    await Product.updateOne(
+      { _id: product._id },
+      { $set: { Variants: createdVariants.map(variant => variant._id) } }
+    );
 
-    // Return success response
-    res
-      .status(201)
-      .json({
-        success: true,
-        message: "Product added successfully",
-        product: Product,
-      });
+
+    res.status(201).json({
+      success: true,
+      message: "Product added successfully",
+      product: product,
+    });
   } catch (error) {
     console.error("Error adding product:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
@@ -75,16 +80,20 @@ const uploadFilesAndAddProducts = asyncHandler(async (req, res) => {
 });
 
 const getAllProducts = async (req, res) => {
+  console.log("he")
   try {
-    const products = await productModel.find().populate('CategoryId').sort({ createdAt: -1 });
-
-    console.log("products:",products)
+    const products = await Product.find()
+      .populate("CategoryId")
+      .populate("Variants")
+      .sort({ createdAt: -1 });
+ console.log(products)
     res.status(200).json({
       success: true,
       message: "Products fetched successfully",
-       products,
+      products,
     });
   } catch (err) {
+    console.error(err); // Log the error for debugging
     res.status(500).json({
       success: false,
       message: "Failed to fetch products",
@@ -92,9 +101,11 @@ const getAllProducts = async (req, res) => {
   }
 };
 
+
 const deleteProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
-
+  
+console.log("adminId",id)
   // Check if the id is present
   if (!id) {
     return res.status(404).json({
@@ -104,7 +115,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
   }
 
   // Attempt to find and delete the product
-  const deletedProduct = await productModel.findByIdAndDelete(id);
+  const deletedProduct = await Product.findByIdAndDelete(id);
 
   if (!deletedProduct) {
     return res.status(404).json({
@@ -120,70 +131,102 @@ const deleteProduct = asyncHandler(async (req, res) => {
   });
 });
 
+const singleProudct = asyncHandler(async (req, res) => {
+  console.log(id);
+  const { id } = req.params;
+  if (!id) {
+    return res.status(404).json({
+      success: false,
+      message: "Product ID is Not provided",
+    });
+  }
+  const product = await Product.findById({ _id: id }).populate("CategoryId");
+  if (!product) {
+    return res.status(404).json({
+      success: false,
+      message: "No Product is Founded With Provided Id",
+    });
+  }
 
-const singleProudct=asyncHandler(async(req,res)=>{
-      const {id}=req.params
-      if(!id){
-        return res.status(404).json({
-          success:false,
-          message:"Product ID is Not provided"
-        })
-      }
-      const product =await productModel.findById({_id:id}).populate('CategoryId')
-      if(!product){
-        return res.status(404).json({
-          success:false,
-          message:"No Product is Founded With Provided Id"
-        })
-
-      }
-
-      console.log(product)
-      return res.status(200).json({
-        success:true,
-        message:"Product fetched Successfully",
-        product
-      })
-
-})
-
+  console.log(product);
+  return res.status(200).json({
+    success: true,
+    message: "Product fetched Successfully",
+    product,
+  });
+});
 
 const updateProduct = async (req, res) => {
   try {
-    const { id } = req.params; 
-    const updates = req.body; 
-    console.log(updates,id)
+    const { id } = req.params;
+    const updates = req.body;
+    console.log(updates, id);
 
-  
     if (!id) {
-      return res.status(400).json({ message: 'Product ID is required' });
+      return res.status(400).json({ message: "Product ID is required" });
     }
     if (!updates) {
-      return res.status(400).json({ message: 'No update data provided' });
+      return res.status(400).json({ message: "No update data provided" });
     }
 
-    const updatedProduct = await productModel.findByIdAndUpdate(
-      id,
-      updates,
-      { new: true } 
-    );
-console.log('updatedPrud',updatedProduct)
+    const updatedProduct = await Product.findByIdAndUpdate(id, updates, {
+      new: true,
+    });
+    console.log("updatedPrud", updatedProduct);
     if (!updatedProduct) {
-      return res.status(404).json({ message: 'Product not found' });
+      return res.status(404).json({ message: "Product not found" });
     }
-  return   res.status(200).json({
-    success:true,
-    message:"Product Updated Successfully"
-  });
-
+    return res.status(200).json({
+      success: true,
+      message: "Product Updated Successfully",
+    });
   } catch (error) {
-    console.error('Error updating product:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error updating product:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
-   
+const searchProducts = async (req, res) => {
+  const { text } = req.body;
+  console.log(text);
 
+  if (!text) {
+    return res.status(400).json({
+      message: "No text provided.",
+      success: false,
+    });
+  }
 
+  try {
+    const products = await Product.find({ Name: new RegExp(text, "i") }).populate('CategoryId');
+    console.log(products);
 
-export { uploadFilesAndAddProducts ,getAllProducts,deleteProduct,singleProudct,updateProduct};
+    if (!products || products.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No products found.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Products found.",
+      products,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error. Please try again later.",
+    });
+  }
+};
+
+export {
+  uploadFilesAndAddProducts,
+  getAllProducts,
+  deleteProduct,
+  singleProudct,
+  updateProduct,
+  searchProducts
+};

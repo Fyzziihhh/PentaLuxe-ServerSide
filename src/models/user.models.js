@@ -16,11 +16,10 @@ const userSchema = mongoose.Schema(
     password: {
       type: String,
     },
-    addresses: [
-      {
-        type: String,
-      },
-    ],
+    addresses: [{
+      type:mongoose.Schema.Types.ObjectId,
+      ref:'Address'
+    }],
     isVerified: {
       type: Boolean,
       default:false
@@ -42,10 +41,6 @@ const userSchema = mongoose.Schema(
     otpExpiryTime: {
       type: Date
     },
-    Product:{
-      type:mongoose.Schema.Types.ObjectId,
-      ref:"Product"
-    }
   },
   { timestamps: true }
 );
@@ -92,5 +87,5 @@ userSchema.methods.generateRefreshToken = function () {
   );
 };
 
-const userModel = mongoose.model("User", userSchema);
-export default userModel;
+const User = mongoose.model("User", userSchema);
+export default User;
