@@ -6,9 +6,6 @@ const verifyToken = asyncHandler(async (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith("Bearer ")) {
         const token = authHeader.split(' ')[1];
-        console.log(token)
-        
-
         if (!token) {
             return res.status(401).json({ success: false, message: "Not Authorized, No Token Provided" });
         }

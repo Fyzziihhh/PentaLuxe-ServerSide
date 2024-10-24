@@ -1,6 +1,6 @@
 
 
-import Product from "../../models/product.models.js";
+import Product from "../../models/product.model.js";
 import { asyncHandler } from "../../helpers/asyncHandler.js";
 
 import { createResponse } from "../../helpers/responseHandler.js";

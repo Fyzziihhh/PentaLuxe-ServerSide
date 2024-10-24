@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { type } from "os";
-import { Variant } from "./varient.model.js";
+import { Variant } from "./variant.model.js";
 
 const cartSchema = mongoose.Schema(
   {

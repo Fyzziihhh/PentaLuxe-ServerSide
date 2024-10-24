@@ -1,7 +1,7 @@
 import Address from "../../models/address.model.js";
 import Order from "../../models/order.model.js";
-import Product from "../../models/product.models.js";
-import { Variant } from "../../models/varient.model.js";
+import Product from "../../models/product.model.js";
+import { Variant } from "../../models/variant.model.js";
 import Cart from "../../models/cart.model.js";
 import { createResponse } from "../../helpers/responseHandler.js";
 

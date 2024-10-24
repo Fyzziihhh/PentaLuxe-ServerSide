@@ -1,7 +1,7 @@
 import Address from "../../models/address.model.js";
 import Order from "../../models/order.model.js";
-import Product from "../../models/product.models.js";
-import { Variant } from "../../models/varient.model.js";
+import Product from "../../models/product.model.js";
+import { Variant } from "../../models/variant.model.js";
 import Cart from "../../models/cart.model.js";
 import Razorpay from "razorpay";
 import crypto from "crypto";
@@ -140,8 +140,6 @@ const paymentVerification = async (req, res) => {
 };
 
 const placeOrder = async (req, res) => {
-  console.log("lksjlfjlksjlkfjlksjklfjklsjfkljslkjfkl"
-  )
   try {
     
     const order = await createOrder(req.user.id, req.body);
@@ -157,7 +155,7 @@ const placeOrder = async (req, res) => {
 };
 
 const createOrder = async (userId, orderDetails) => {
-  const { addressId, items, paymentMethod, totalAmount } = orderDetails;
+  const { addressId, items, paymentMethod, totalAmount,couponDiscount } = orderDetails;
 
   const estimatedDeliveryDate = new Date();
   const shippingAddress = await Address.findById(addressId).select('-_id -Phone -user -addressType -default');
@@ -178,6 +176,9 @@ const createOrder = async (userId, orderDetails) => {
     status: paymentMethod === "Razorpay" ? "Confirmed" : "Pending",
     orderDate: new Date(),
     estimatedDeliveryDate,
+    couponDiscount,
+    
+
   });
 
   for (const item of items) {

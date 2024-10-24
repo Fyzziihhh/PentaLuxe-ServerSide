@@ -1,5 +1,5 @@
 import Cart from "../../models/cart.model.js";
-import Product from "../../models/product.models.js";
+import Product from "../../models/product.model.js";
 import jwt from "jsonwebtoken";
 import { createResponse } from "../../helpers/responseHandler.js";
 const addToCart = async (req, res) => {

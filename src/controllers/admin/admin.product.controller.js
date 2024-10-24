@@ -1,9 +1,9 @@
 import { asyncHandler } from "../../helpers/asyncHandler.js";
 import { uploadOnCloudinary } from "../../helpers/cloudinary.js";
-import Product from "../../models/product.models.js";
+import Product from "../../models/product.model.js";
 import Category from "../../models/category.model.js";
 import qs from "qs";
-import { Variant } from "../../models/varient.model.js";
+import { Variant } from "../../models/variant.model.js";
 const uploadFilesAndAddProducts = asyncHandler(async (req, res) => {
   try {
     console.log("Received request to upload files and add product");

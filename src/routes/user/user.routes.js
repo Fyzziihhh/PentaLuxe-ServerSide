@@ -18,6 +18,7 @@ import { cancelOrder, getUserOrders } from "../../controllers/user/user.order.co
 import { userStatus } from "../../middlewares/userStatus.middleware.js";
 import {  createRazorpayOrder, paymentVerification, placeOrder } from "../../controllers/user/user.checkout.controller.js";
 import { getAllCoupons } from "../../controllers/admin/admin.coupon.controller.js";
+import { AddToWishlist, checkProductInWishlist, fetchWishlistProducts, removeFromWishlist } from "../../controllers/user/user.wishlist.controller.js";
 
 const router = express.Router();
 
@@ -68,6 +69,15 @@ router.get('/getkey',async(req,res)=>res.status(200).json({key:process.env.RAZOR
 
 
 router.get('/coupons',getAllCoupons)
+
+
+router.post('/wishlist',verifyToken,AddToWishlist)
+router.delete('/wishlist/:id',verifyToken,removeFromWishlist)
+router.get('/wishlist',fetchWishlistProducts)
+router.get('/wishlist/:id',verifyToken,checkProductInWishlist)
+
+
+
 
 
 

@@ -38,9 +38,7 @@ const orderSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    transactionId: {
-      type: String,
-    },
+  
     totalAmount: {
       type: Number,
       required: true,
@@ -79,11 +77,9 @@ const orderSchema = new mongoose.Schema(
           },
         },
       ],
-      required: true, // This makes the 'items' array required
+      required: true, 
     },
-    
-    
-    discounts: {
+    couponDiscount: {
       type: Number,
       default: 0,
     },

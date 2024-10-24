@@ -23,6 +23,8 @@ import {
 import adminAuthMiddleware from '../../middlewares/adminSession.middleware.js';
 import { changeOrderStatus, getAllOrders } from '../../controllers/admin/admin.order.controller.js';
 import { createCoupon, deleteCoupon, getAllCoupons } from '../../controllers/admin/admin.coupon.controller.js';
+import { processCategoryOffer, processProductOffer } from '../../controllers/admin/admin.offer.controller.js';
+import { generateSalesReport } from '../../controllers/admin/admin.sales.controller.js';
 
 const router = express.Router();
 
@@ -51,12 +53,21 @@ router.post('/search-user',searchUsers)
 // Status update route
 router.patch('/statusUpdate', adminAuthMiddleware, updateUserStatus);
 
+//orders routes
 router.get('/orders',getAllOrders)
 router.patch('/orders',changeOrderStatus)
 
-
+//coupon routes
 router.post('/coupon',createCoupon)
 router.get('/coupon',getAllCoupons)
 router.delete('/coupon/:id',deleteCoupon)
+
+
+//offer
+router.patch('/product-offer',processProductOffer)
+router.patch('/category-offer',processCategoryOffer)
+
+//sales report
+router.post('/sales-report',generateSalesReport)
 
 export default router;
