@@ -5,7 +5,7 @@ const couponSchema = new mongoose.Schema(
     couponName: {
       type: String,
       required: true,
-      uppercase:true
+      uppercase: true,
     },
     discountPercentage: {
       type: Number,
@@ -23,6 +23,12 @@ const couponSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
+    users: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
   },
   { timestamps: true }
 );

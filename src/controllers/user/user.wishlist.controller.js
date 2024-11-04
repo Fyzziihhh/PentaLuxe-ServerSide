@@ -99,17 +99,18 @@ const fetchWishlistProducts = async (req, res) => {
     try {
       const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
       const userId = decoded._id;
-
-      const userWishlist = await Wishlist.findOne({ user: userId })
-        .populate({
-          path: "products.product",
-          populate: {
-            path: "Variants",
-          },
-        })
-        .populate("products.variant")
-        .select("products -_id");
-      console.log("userWallet", userWishlist.variant);
+      console.log(decoded,userId)
+      
+      const userWishlist = await Wishlist.findOne({ user: userId }).populate({
+        path: "products.product",
+        populate: {
+          path: "Variants",
+        },
+      })
+      .populate("products.variant")
+      .select("products -_id");
+      // console.log("userWallet", userWishlist.variant);
+      // console.log("Userwishlist",userWishlist)
       if (userWishlist) {
         return res.status(200).json({
           success: true,

@@ -21,6 +21,7 @@ const orderSchema = new mongoose.Schema(
         "Delivered",
         "Cancelled",
         "Returned",
+        "Payment Failed"
       ],
       default: "Pending",
     },
@@ -51,6 +52,10 @@ const orderSchema = new mongoose.Schema(
             ref: "Product",
             required: true,
           },
+          categoryName:{
+            type:String,
+            requried:true
+          },
           productName: {
             type: String,
             required: true,
@@ -79,6 +84,9 @@ const orderSchema = new mongoose.Schema(
       ],
       required: true, 
     },
+    couponCode:{
+      type:String
+    },
     couponDiscount: {
       type: Number,
       default: 0,
@@ -86,6 +94,31 @@ const orderSchema = new mongoose.Schema(
     estimatedDeliveryDate: {
       type: Date,
     },
+    cancellationReason: {
+      type: String,
+      enum: [
+        "Changed my mind",
+        "Item not as described",
+        "Found a better price",
+        "Delay in delivery",
+        "Other",
+      ],
+      default: null,
+    },
+    returnReason: {
+      type: String,
+      enum: [
+        "Defective item",
+        "Wrong item received",
+        "Changed my mind",
+        "Sizing issues",
+        "Other",
+      ],
+      default: null,
+    },
+    transactionId:{
+      type:String
+    }
   },
   { timestamps: true }
 );

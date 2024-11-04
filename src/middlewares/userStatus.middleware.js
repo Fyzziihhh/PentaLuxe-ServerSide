@@ -1,28 +1,38 @@
+import { serverErrorResponse } from "../helpers/responseHandler.js";
+import User from "../models/user.models.js";
+import jwt from "jsonwebtoken";
 
-
-export const userStatus = async (req, res, next) => {
-const authHeader = req.headers.authorization;
-if (authHeader && authHeader.startsWith("Bearer ")) {
-    const token = authHeader.split(' ')[1];
-    if (!token) {
-        return res.status(401).json({ message: 'No token, authorization denied' });
+ const userStatus = async (req, res, next) => {
+   try {
+     if (req.user) {
+       if (req.user.status === "BLOCKED") {
+         return res.status(403).json({ message: "Your account has been blocked" });
+        }
+        return next();
       }
-      try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await User.findById(decoded.id);
     
-        // Check if user exists
-        if (!user) {
-          return res.status(404).json({ message: 'User not found' });
-        }
-        next();
-    
-        // Check if the user is blocked
-        if (user.status==='BLOCKED') {
-          return res.status(403).json({ message: 'Your account has been blocked' });
-        }
+      const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+      if (!token) {
+        return next();
+      }
+      
+      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+      const user = await User.findById(decoded._id);
+      
+      if (!user) {
+      console.log(decoded)
+      return res.status(404).json({ message: "User not found" });
     }
-    catch(err){
-        res.status(500).json({ message: 'Server error' });
+
+    if (user.status === "BLOCKED") {
+      return res.status(401).json({ message: "Your account has been blocked" });
     }
-}}
+    next();
+  } catch (err) {
+    console.error(err); // Log the error for debugging
+serverErrorResponse(res)
+  }
+};
+
+export default userStatus

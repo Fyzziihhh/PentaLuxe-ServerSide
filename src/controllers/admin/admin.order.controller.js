@@ -3,7 +3,7 @@ import Order from "../../models/order.model.js";
 const getAllOrders = async (req, res) => {
   console.log("Fetching all orders...");
   try {
-    const orders = await Order.find({})
+    const orders = await Order.find()
       .populate("user")
       .populate("shippingAddress");
     console.log(orders);

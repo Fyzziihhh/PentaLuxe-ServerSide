@@ -7,8 +7,10 @@ const addToCart = async (req, res) => {
   const user = req.user;
 
   try {
-    const product = await Product.findById(productId).populate("Variants");
-
+    const product = await Product.findById(productId)
+      .populate("Variants")
+      .populate("CategoryId");
+    console.log("addtocart", product);
     if (!product) {
       return createResponse(res, 404, false, "Product Not Found");
     }
@@ -21,7 +23,12 @@ const addToCart = async (req, res) => {
       return createResponse(res, 400, false, "Invalid product volume selected");
     }
     if (selectedVariant.stock === 0) {
-      return createResponse(res, 400, false, "Sorry, this item is currently unavailable");
+      return createResponse(
+        res,
+        400,
+        false,
+        "Sorry, this item is currently unavailable"
+      );
     }
 
     let cart = await Cart.findOne({ user: user._id });
@@ -33,7 +40,14 @@ const addToCart = async (req, res) => {
           { product: productId, quantity: 1, variant: selectedVariant._id },
         ],
       });
-      return createResponse(res, 200, true, "Product Added to the cart Successfully", cart.products[0]);
+      console.log(cart);
+      return createResponse(
+        res,
+        200,
+        true,
+        "Product Added to the cart Successfully",
+        cart.products[0]
+      );
     }
 
     const existingProduct = cart.products.find(
@@ -53,13 +67,23 @@ const addToCart = async (req, res) => {
     });
     await cart.save();
 
-    return createResponse(res, 200, true, "Product Added to the cart Successfully", cart.products[cart.products.length - 1]);
+    return createResponse(
+      res,
+      200,
+      true,
+      "Product Added to the cart Successfully",
+      cart.products[cart.products.length - 1]
+    );
   } catch (error) {
     console.error(error);
-    return createResponse(res, 500, false, "An error occurred while adding the product");
+    return createResponse(
+      res,
+      500,
+      false,
+      "An error occurred while adding the product"
+    );
   }
 };
-
 
 const getUserCart = async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
@@ -70,12 +94,24 @@ const getUserCart = async (req, res) => {
       const userId = decoded._id;
 
       const userCart = await Cart.findOne({ user: userId })
-        .populate("products.product")
+        .populate({
+          path: "products.product",
+          populate: {
+            path: "CategoryId",
+            select: "categoryName",
+          },
+        })
         .populate("products.variant")
         .select("products -_id");
 
       if (userCart) {
-        return createResponse(res, 200, true, "Cart retrieved successfully", userCart.products);
+        return createResponse(
+          res,
+          200,
+          true,
+          "Cart retrieved successfully",
+          userCart.products
+        );
       } else {
         return createResponse(res, 200, true, "Cart is empty", []);
       }
@@ -88,14 +124,13 @@ const getUserCart = async (req, res) => {
   return createResponse(res, 200, true, "Cart is empty", []);
 };
 
-
 const changeProductQuantity = async (req, res) => {
   const { itemId, action, stock } = req.body;
 
   if (!itemId) {
     return createResponse(res, 400, false, "Item ID is Required");
   }
-  
+
   const userId = req.user._id;
 
   try {
@@ -108,21 +143,26 @@ const changeProductQuantity = async (req, res) => {
     const product = userCart.products.find(
       (product) => product._id.toString() === itemId
     );
-    
+
     if (!product) {
       return createResponse(res, 404, false, "Item not found in cart");
     }
 
     switch (action) {
       case "INC":
-        if (product.quantity < 10) { 
-          if (product.quantity >= stock) { 
+        if (product.quantity < 10) {
+          if (product.quantity >= stock) {
             return createResponse(res, 400, false, "Stock limit reached");
           } else {
             product.quantity += 1;
           }
         } else {
-          return createResponse(res, 400, false, "Limit of 10 items per person reached");
+          return createResponse(
+            res,
+            400,
+            false,
+            "Limit of 10 items per person reached"
+          );
         }
         break;
 
@@ -148,7 +188,6 @@ const changeProductQuantity = async (req, res) => {
     return createResponse(res, 500, false, "Server error");
   }
 };
-
 
 const removeProduct = async (req, res) => {
   const { id } = req.params;
@@ -176,10 +215,11 @@ const removeProduct = async (req, res) => {
     await cart.save();
     return createResponse(res, 200, true, "Product removed from cart");
   } catch (err) {
-    return createResponse(res, 500, false, "Error removing product from cart", { error: err.message });
+    return createResponse(res, 500, false, "Error removing product from cart", {
+      error: err.message,
+    });
   }
 };
-
 
 const updateCartTotalPrice = async (req, res) => {
   const { totalPrice } = req.body;
@@ -200,10 +240,14 @@ const updateCartTotalPrice = async (req, res) => {
     await cart.save();
     return createResponse(res, 200, true, "Total Price Updated Successfully");
   } catch (error) {
-    return createResponse(res, 500, false, "An error occurred while updating the total price");
+    return createResponse(
+      res,
+      500,
+      false,
+      "An error occurred while updating the total price"
+    );
   }
 };
-
 
 export {
   addToCart,

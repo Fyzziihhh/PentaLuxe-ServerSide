@@ -18,7 +18,7 @@ const uploadFilesAndAddProducts = asyncHandler(async (req, res) => {
       productVolumes,
     } = parsedBody;
     console.log(parsedBody);
-    console.log(productVolumes)
+    console.log(productVolumes);
 
     if (!req.files || req.files.length === 0) {
       return res
@@ -49,24 +49,22 @@ const uploadFilesAndAddProducts = asyncHandler(async (req, res) => {
       DiscountPercentage,
       CategoryId: category._id,
     });
-    
+
     // Step 2: Prepare Variants Data
     const productVolumesArray = Object.entries(productVolumes).map(
       ([key, value]) => ({
-        productId: product._id, 
+        productId: product._id,
         volume: key,
         price: Number(value.price),
         stock: Number(value.stock),
       })
     );
-    
- 
+
     const createdVariants = await Variant.create(productVolumesArray);
     await Product.updateOne(
       { _id: product._id },
-      { $set: { Variants: createdVariants.map(variant => variant._id) } }
+      { $set: { Variants: createdVariants.map((variant) => variant._id) } }
     );
-
 
     res.status(201).json({
       success: true,
@@ -80,17 +78,19 @@ const uploadFilesAndAddProducts = asyncHandler(async (req, res) => {
 });
 
 const getAllProducts = async (req, res) => {
-  console.log("he")
   try {
     const products = await Product.find()
       .populate("CategoryId")
       .populate("Variants")
       .sort({ createdAt: -1 });
- console.log(products)
+    const filteredProducts = products.filter(
+      (product) => product.CategoryId !== null
+    );
+    console.log("filterdProducts", filteredProducts);
     res.status(200).json({
       success: true,
       message: "Products fetched successfully",
-      products,
+      products: filteredProducts,
     });
   } catch (err) {
     console.error(err); // Log the error for debugging
@@ -101,11 +101,10 @@ const getAllProducts = async (req, res) => {
   }
 };
 
-
 const deleteProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  
-console.log("adminId",id)
+
+  console.log("adminId", id);
   // Check if the id is present
   if (!id) {
     return res.status(404).json({
@@ -132,7 +131,6 @@ console.log("adminId",id)
 });
 
 const singleProudct = asyncHandler(async (req, res) => {
-  console.log(id);
   const { id } = req.params;
   if (!id) {
     return res.status(404).json({
@@ -140,7 +138,9 @@ const singleProudct = asyncHandler(async (req, res) => {
       message: "Product ID is Not provided",
     });
   }
-  const product = await Product.findById({ _id: id }).populate("CategoryId");
+  const product = await Product.findById({ _id: id })
+    .populate("CategoryId")
+    .populate("Variants");
   if (!product) {
     return res.status(404).json({
       success: false,
@@ -148,7 +148,6 @@ const singleProudct = asyncHandler(async (req, res) => {
     });
   }
 
-  console.log(product);
   return res.status(200).json({
     success: true,
     message: "Product fetched Successfully",
@@ -159,23 +158,65 @@ const singleProudct = asyncHandler(async (req, res) => {
 const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const updates = req.body;
-    console.log(updates, id);
 
-    if (!id) {
-      return res.status(400).json({ message: "Product ID is required" });
-    }
-    if (!updates) {
-      return res.status(400).json({ message: "No update data provided" });
+    const {
+      Name,
+      Gender,
+      categoryName,
+      DiscountPercentage,
+      Description,
+      ScentType,
+    } = req.body;
+    const Quantities = JSON.parse(req.body.Quantities);
+    const existingImages = JSON.parse(req.body.existingImages);
+    //  console.log(Quantities,existingImages)
+    const product = await Product.findById(id).populate("Variants");
+
+    const updatePromises = [];
+
+    // Iterate through each quantity
+    for (const quantity of Quantities) {
+      if (quantity._id) {
+        // If the quantity has an ID, update the existing variant
+        const updatePromise = Variant.findByIdAndUpdate(
+          quantity._id,
+          {
+            volume: quantity.volume,
+            price: quantity.price,
+            stock: quantity.stock,
+          },
+          { new: true } // This option returns the updated document
+        );
+        updatePromises.push(updatePromise);
+      } else {
+        // If the quantity does not have an ID, create a new variant
+        const newVariantPromise = Variant.create({
+          productId: id,
+          volume: quantity.volume,
+          price: quantity.price,
+          stock: quantity.stock,
+        });
+        updatePromises.push(newVariantPromise);
+      }
     }
 
-    const updatedProduct = await Product.findByIdAndUpdate(id, updates, {
-      new: true,
-    });
-    console.log("updatedPrud", updatedProduct);
-    if (!updatedProduct) {
-      return res.status(404).json({ message: "Product not found" });
-    }
+    // Wait for all variant updates/creations to complete
+    const updatedVariants = await Promise.all(updatePromises);
+
+    product.Name = Name;
+    product.Gender = Gender;
+    product.categoryName = categoryName;
+    product.DiscountPercentage = DiscountPercentage;
+    product.Description = Description;
+    product.ScentType = ScentType;
+    product.existingImages = existingImages;
+    product.Variants = updatedVariants.map((variant) => variant._id); // Update Quantities here
+
+    // Save the updated product document
+    await product.save();
+
+    console.log("updatedProduct", product);
+   
     return res.status(200).json({
       success: true,
       message: "Product Updated Successfully",
@@ -198,7 +239,9 @@ const searchProducts = async (req, res) => {
   }
 
   try {
-    const products = await Product.find({ Name: new RegExp(text, "i") }).populate('CategoryId');
+    const products = await Product.find({
+      Name: new RegExp(text, "i"),
+    }).populate("CategoryId");
     console.log(products);
 
     if (!products || products.length === 0) {
@@ -228,5 +271,5 @@ export {
   deleteProduct,
   singleProudct,
   updateProduct,
-  searchProducts
+  searchProducts,
 };

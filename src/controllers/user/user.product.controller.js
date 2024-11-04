@@ -25,15 +25,16 @@ const productDetails = asyncHandler(async (req, res) => {
 
 const getProducts = async (req, res) => {
   try {
-    const products = await Product.find().populate("Variants");
-    console.log(products);
-
+    const products = await Product.find().populate("Variants").populate('CategoryId').sort({createdAt:-1});
+  
+    const filterdProductsByCategory=products.filter(product=>product.CategoryId!==null)
+    console.log('filteredProducts : ',filterdProductsByCategory)
     return createResponse(
       res,
       200,
       true,
       "Products fetched successfully based on user preference.",
-      products
+      filterdProductsByCategory
     );
   } catch (error) {
     console.error("Error fetching products:", error);

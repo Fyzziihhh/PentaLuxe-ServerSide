@@ -17,7 +17,8 @@ const generateSalesReport=async(req,res)=>{
         const salesReport = await Order.find({
             orderDate: { $gte: start, $lte: end },
           }).populate('user')
-          console.log(salesReport)
+
+          console.log("salesReport",salesReport)
           createResponse(res,200,true,"Sales Generatored Successfully",salesReport)
     } catch (error) {
        serverErrorResponse(res)
@@ -25,6 +26,14 @@ const generateSalesReport=async(req,res)=>{
 }
 
 
+
+
+
 export{
     generateSalesReport
 }
+
+
+
+
+

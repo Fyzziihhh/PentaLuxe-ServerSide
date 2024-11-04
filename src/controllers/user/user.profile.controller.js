@@ -1,7 +1,8 @@
 import Address from "../../models/address.model.js";
 import User from "../../models/user.models.js";
-import { createResponse } from "../../helpers/responseHandler.js";
+import { createResponse, serverErrorResponse } from "../../helpers/responseHandler.js";
 import { asyncHandler } from "../../helpers/asyncHandler.js";
+import jwt from 'jsonwebtoken'
 
 
 const getUserProfile = asyncHandler(async (req, res) => {
@@ -169,6 +170,36 @@ console.log(address)
 };
 
 
+
+
+
+const changePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const user = req.user;
+
+  if (!currentPassword || !newPassword) {
+    return createResponse(res, 400, false, "Current and new passwords are required.");
+  }
+
+  try {
+    // Verify the current password
+    const isMatch = await user.isPasswordCorrect(currentPassword);
+    if (!isMatch) {
+      return createResponse(res, 401, false, "Current password is incorrect.");
+    }
+
+    // Update the password if current password matches
+    user.password = newPassword;
+    await user.save();
+
+    return createResponse(res, 200, true, "Password changed successfully.");
+  } catch (error) {
+    console.error("Error changing password:", error);
+    return serverErrorResponse(res);
+  }
+};
+
+
 export {
   DeleteAddress,
   getUserProfile,
@@ -177,4 +208,5 @@ export {
   getAllAddresses,
   getUserAddressById,
   UpdateUserAddress,
+  changePassword
 };

@@ -6,6 +6,7 @@ import Cart from "../../models/cart.model.js";
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import { createResponse } from "../../helpers/responseHandler.js";
+import Wallet from "../../models/wallet.model.js";
 // const processOrderSubmission = async (req, res) => {
 //   const { addressId, paymentMethod, totalAmount, items, productImage } =
 //     req.body;
@@ -126,7 +127,12 @@ const paymentVerification = async (req, res) => {
 
   try {
     if (isAuthentic) {
-      const order = await createOrder(req.user.id, orderDetails);
+      const order = await createOrder(
+        req.user.id,
+        orderDetails,
+        "",
+        razorpay_payment_id
+      );
       return createResponse(res, 201, true, "Order created successfully", {
         orderId: order._id,
         estimatedDeliveryDate: order.estimatedDeliveryDate,
@@ -135,37 +141,55 @@ const paymentVerification = async (req, res) => {
       return createResponse(res, 400, false, "Payment verification failed.");
     }
   } catch (error) {
-    return createResponse(res, 500, false, "Server error during order creation");
+    return createResponse(
+      res,
+      500,
+      false,
+      "Server error during order creation"
+    );
   }
 };
 
 const placeOrder = async (req, res) => {
   try {
-    
     const order = await createOrder(req.user.id, req.body);
-    console.log("Order",order)
+    console.log("Order", order);
     return createResponse(res, 201, true, "Order created successfully", {
       orderId: order._id,
       estimatedDeliveryDate: order.estimatedDeliveryDate,
     });
   } catch (error) {
-    console.log("order Erroro",error)
+    console.log("order Erroro", error);
     return createResponse(res, 500, false, "Error creating order");
   }
 };
 
-const createOrder = async (userId, orderDetails) => {
-  const { addressId, items, paymentMethod, totalAmount,couponDiscount } = orderDetails;
-
+const createOrder = async (
+  userId,
+  orderDetails,
+  status = "",
+  transactionId
+) => {
+  const {
+    addressId,
+    items,
+    paymentMethod,
+    totalAmount,
+    couponDiscount,
+    couponCode,
+  } = orderDetails;
+  console.log("items", items);
   const estimatedDeliveryDate = new Date();
-  const shippingAddress = await Address.findById(addressId).select('-_id -Phone -user -addressType -default');
+  const shippingAddress = await Address.findById(addressId).select(
+    "-_id -Phone -user -addressType -default"
+  );
 
   estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 5);
   let orderId = "#";
   for (let i = 0; i < 6; i++) {
     orderId += Math.floor(Math.random() * 10);
   }
-
+  console.log(couponCode);
   const order = await Order.create({
     _id: orderId,
     user: userId,
@@ -173,19 +197,25 @@ const createOrder = async (userId, orderDetails) => {
     items,
     totalAmount,
     paymentMethod,
-    status: paymentMethod === "Razorpay" ? "Confirmed" : "Pending",
+    status: status
+      ? status
+      : paymentMethod === "Razorpay"||paymentMethod==='Wallet'
+      ? "Confirmed"
+      : "Pending",
     orderDate: new Date(),
     estimatedDeliveryDate,
     couponDiscount,
-    
-
+    couponCode,
+    transactionId: transactionId ? transactionId : null,
   });
 
   for (const item of items) {
     const product = await Product.findById(item.productId).populate("Variants");
 
     const variant = product.Variants.find(
-      (variant) => variant.price === item.price
+      (variant) =>
+        variant.price - (variant.price * item.discountPercentage) / 100 ===
+        item.price
     );
 
     if (!variant) {
@@ -205,4 +235,60 @@ const createOrder = async (userId, orderDetails) => {
   return order;
 };
 
-export { placeOrder, createRazorpayOrder, paymentVerification };
+const handleWalletPayment = async (req, res) => {
+  try {
+    const userID = req.user._id;
+    const { totalPrice, orderDetails } = req.body;
+    
+    const wallet =await Wallet.findOne({ userID });
+if(!wallet){
+  return createResponse(res,404,false,"User Dont Have Wallet Change the Payment Method")
+}
+    if (wallet.balance < totalPrice) {
+      return res.status(400).json({ message: "Insufficient wallet balance" });
+    }
+
+    wallet.balance -= totalPrice;
+    const order = await createOrder(userID, orderDetails);
+    wallet.transactions.push({
+      orderID:order._id,
+      amount:totalPrice,
+      method:order.paymentMethod,
+      type:"debit",
+      date:Date.now()
+    })
+
+    await wallet.save();
+    return createResponse(res, 201, true, "Order created successfully", {
+      orderId: order._id,
+      estimatedDeliveryDate: order.estimatedDeliveryDate,
+    });
+  } catch (error) {
+    console.error("Payment error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const handlePaymentFailed = async (req, res) => {
+  const existingOrder = await Order.findOne({
+    transactionId: req.body.response.error.metadata.payment_id,
+  });
+  if (existingOrder) {
+    return res.json();
+  }
+  const order = await createOrder(
+    req.user._id,
+    req.body.orderDetails,
+    "Payment Failed",
+    req.body.response.error.metadata.payment_id
+  );
+  console.log(order);
+};
+
+export {
+  placeOrder,
+  createRazorpayOrder,
+  paymentVerification,
+  handlePaymentFailed,
+  handleWalletPayment,
+};
