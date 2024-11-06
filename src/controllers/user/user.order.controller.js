@@ -12,6 +12,15 @@ const getUserOrders = async (req, res) => {
     const orders = await Order.find({ user: req.user._id })
       .populate("user")
       .populate("shippingAddress")
+      .populate({
+        path: "items",
+        populate: {
+          path: "productId", 
+          populate: {
+            path: "Variants"
+          }
+        }
+      })
       .sort({ createdAt: -1 });
     return createResponse(
       res,

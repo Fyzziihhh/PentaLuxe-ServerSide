@@ -62,7 +62,7 @@ router.post("/products", uploader.any(), uploadFilesAndAddProducts);
 router.get("/products", adminAuthMiddleware, getAllProducts);
 router.delete("/products/:id", adminAuthMiddleware, deleteProduct);
 router.get("/products/:id", singleProudct);
-router.put("/products/:id", uploader.any(), updateProduct);
+router.put("/products/:id", uploader.single('file'), updateProduct);
 router.post("/search-product", searchProducts);
 
 // Customer routes

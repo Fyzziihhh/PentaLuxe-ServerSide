@@ -3,6 +3,7 @@ import { uploadOnCloudinary } from "../../helpers/cloudinary.js";
 import Category from "../../models/category.model.js";
 import User from "../../models/user.models.js";
 import { asyncHandler } from "../../helpers/asyncHandler.js";
+import { serverErrorResponse } from "../../helpers/responseHandler.js";
 const adminLogin = (req, res) => {
   const { email, password } = req.body;
 
@@ -83,6 +84,7 @@ const getCategories = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
+    serverErrorResponse(res)
   }
 };
 

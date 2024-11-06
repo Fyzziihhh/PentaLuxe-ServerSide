@@ -13,6 +13,7 @@ import userStatus from "../../middlewares/userStatus.middleware.js"; // Make sur
 import {
   getProducts,
   productDetails,
+  searchProductsByCategory,
 } from "../../controllers/user/user.product.controller.js";
 import { getCategories } from "../../controllers/admin/admin.controller.js";
 import { getAllProductsByCategory } from "../../controllers/user/user.category.controller.js";
@@ -29,6 +30,7 @@ import {
 import {
   addToCart,
   changeProductQuantity,
+  getAllAvailableCoupons,
   getUserCart,
   removeProduct,
   updateCartTotalPrice,
@@ -52,6 +54,7 @@ import {
   removeFromWishlist,
 } from "../../controllers/user/user.wishlist.controller.js";
 import { getUserWallet } from "../../controllers/user/user.wallet.controller.js";
+import { searchUsers } from "../../controllers/admin/admin.user.controller.js";
 
 const router = express.Router();
 
@@ -78,13 +81,15 @@ router.delete("/address-book/:id", verifyToken, userStatus, DeleteAddress);
 // Product routes with userStatus middleware
 router.get("/products", userStatus, getProducts);
 router.get("/products/:id", userStatus, productDetails);
+router.get('/related-products')
+router.post('/search-products-by-category',searchProductsByCategory)
 
 // Category routes
 router.get("/categories", getCategories);
 router.get("/categories/:id", userStatus, getAllProductsByCategory);
 
 // Cart routes with userStatus middleware
-router.get("/cart", verifyToken, userStatus, getUserCart);
+router.get("/cart", userStatus, getUserCart);
 router.post("/cart", verifyToken, userStatus, addToCart);
 router.delete("/cart/:id", verifyToken, userStatus, removeProduct);
 router.patch("/cart", verifyToken, userStatus, changeProductQuantity);
@@ -114,12 +119,14 @@ router.post(
   userStatus,
   handlePaymentFailed
 );
+
+router.put('/order-retry-payment',verifyToken,userStatus,paymentVerification)
 router.get("/getkey", async (req, res) =>
   res.status(200).json({ key: process.env.RAZORPAY_API_KEY })
 );
 
 // Coupons routes
-router.get("/coupons", userStatus, getAllCoupons);
+router.get("/coupons", userStatus, getAllAvailableCoupons);
 
 // Wishlist routes with userStatus middleware
 router.post("/wishlist", verifyToken, userStatus, AddToWishlist);

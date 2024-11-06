@@ -7,7 +7,7 @@ import { createResponse } from "../../helpers/responseHandler.js";
 
 const getAllProductsByCategory = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const products = await Product.find({ CategoryId: id });
+    const products = await Product.find({ CategoryId: id }).populate('Variants');
   
     if (products.length === 0) {
       return createResponse(res, 404, false, "No Products found in this category");

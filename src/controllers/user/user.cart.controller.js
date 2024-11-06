@@ -1,5 +1,6 @@
 import Cart from "../../models/cart.model.js";
 import Product from "../../models/product.model.js";
+import Coupon from "../../models/coupon.model.js";
 import jwt from "jsonwebtoken";
 import { createResponse } from "../../helpers/responseHandler.js";
 const addToCart = async (req, res) => {
@@ -249,10 +250,33 @@ const updateCartTotalPrice = async (req, res) => {
   }
 };
 
+const getAllAvailableCoupons = async (req, res) => {
+  console.log("inside the coupons");
+  try {
+    const coupons = await Coupon.find({});
+
+    const AvailableCoupons = coupons.filter(coupon=>Date.now()>coupon.expiryDate)
+
+    console.log(updatedCoupons);
+
+    return createResponse(
+      res,
+      200,
+      true,
+      "Coupons retrieved successfully.",
+      AvailableCoupons
+    );
+  } catch (error) {
+    console.log(error);
+    serverErrorResponse(res, "Failed to fetch coupon codes");
+  }
+};
+
 export {
   addToCart,
   getUserCart,
   changeProductQuantity,
   removeProduct,
   updateCartTotalPrice,
+  getAllAvailableCoupons,
 };

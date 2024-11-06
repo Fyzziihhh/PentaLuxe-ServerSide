@@ -86,7 +86,6 @@ const getAllProducts = async (req, res) => {
     const filteredProducts = products.filter(
       (product) => product.CategoryId !== null
     );
-    console.log("filterdProducts", filteredProducts);
     res.status(200).json({
       success: true,
       message: "Products fetched successfully",
@@ -169,12 +168,23 @@ const updateProduct = async (req, res) => {
     } = req.body;
     const Quantities = JSON.parse(req.body.Quantities);
     const existingImages = JSON.parse(req.body.existingImages);
-    //  console.log(Quantities,existingImages)
+    console.log(req.file)
+  if(req.file){
+
+    const response = await uploadOnCloudinary(req.file);
+    if (!response || response.length === 0) {
+      return res
+        .status(500)
+        .json({ success: false, message: "File upload failed" });
+    }
+    if(response){
+     existingImages.push(response[0])
+    }
+  }
+
     const product = await Product.findById(id).populate("Variants");
-
     const updatePromises = [];
-
-    // Iterate through each quantity
+    // Iterate through each quantity9
     for (const quantity of Quantities) {
       if (quantity._id) {
         // If the quantity has an ID, update the existing variant
@@ -209,7 +219,7 @@ const updateProduct = async (req, res) => {
     product.DiscountPercentage = DiscountPercentage;
     product.Description = Description;
     product.ScentType = ScentType;
-    product.existingImages = existingImages;
+    product.Images = existingImages;
     product.Variants = updatedVariants.map((variant) => variant._id); // Update Quantities here
 
     // Save the updated product document

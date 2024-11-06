@@ -7,6 +7,7 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import { createResponse } from "../../helpers/responseHandler.js";
 import Wallet from "../../models/wallet.model.js";
+import { create } from "domain";
 // const processOrderSubmission = async (req, res) => {
 //   const { addressId, paymentMethod, totalAmount, items, productImage } =
 //     req.body;
@@ -111,7 +112,10 @@ const paymentVerification = async (req, res) => {
     razorpay_payment_id,
     razorpay_signature,
     orderDetails,
+    retryPayment,
+    orderId,
   } = req.body;
+  console.log("insidePaymentVerfication", req.body);
 
   // Create the body string for signature verification
   const body = razorpay_order_id + "|" + razorpay_payment_id;
@@ -121,18 +125,51 @@ const paymentVerification = async (req, res) => {
     .createHmac("sha256", process.env.RAZORPAY_SECRET_KEY)
     .update(body.toString())
     .digest("hex");
-
-  // Verify the signature
   const isAuthentic = expectedSignature === razorpay_signature;
 
   try {
-    if (isAuthentic) {
+    if (isAuthentic && retryPayment) {
+      const order = await Order.findById(orderId);
+
+      await Promise.all(
+        order.items.map(async (item) => {
+          const product = await Product.findById(item.productId).populate(
+            "Variants"
+          );
+
+          const variant = product.Variants.find(
+            (variant) =>
+              variant.price -
+                (variant.price * item.discountPercentage) / 100 ===
+              item.price
+          );
+
+          if (!variant) {
+            throw new Error(`Variant not found for ${product.Name}`);
+          }
+
+          if (variant.stock <= item.quantity) {
+            throw new Error(`Insufficient stock for ${product.Name} variant`);
+          }
+
+          // Update stock
+          variant.stock -= item.quantity;
+          await Variant.findByIdAndUpdate(variant._id, {
+            stock: variant.stock,
+          });
+        })
+      );
+      order.status = "Confirmed";
+      await order.save();
+      return createResponse(res, 200, true, "Order Confirmed Successfully");
+    } else if (isAuthentic) {
       const order = await createOrder(
         req.user.id,
         orderDetails,
         "",
         razorpay_payment_id
       );
+
       return createResponse(res, 201, true, "Order created successfully", {
         orderId: order._id,
         estimatedDeliveryDate: order.estimatedDeliveryDate,
@@ -141,12 +178,8 @@ const paymentVerification = async (req, res) => {
       return createResponse(res, 400, false, "Payment verification failed.");
     }
   } catch (error) {
-    return createResponse(
-      res,
-      500,
-      false,
-      "Server error during order creation"
-    );
+    console.log(error);
+    return createResponse(res, 500, false, error.message);
   }
 };
 
@@ -199,7 +232,7 @@ const createOrder = async (
     paymentMethod,
     status: status
       ? status
-      : paymentMethod === "Razorpay"||paymentMethod==='Wallet'
+      : paymentMethod === "Razorpay" || paymentMethod === "Wallet"
       ? "Confirmed"
       : "Pending",
     orderDate: new Date(),
@@ -209,25 +242,29 @@ const createOrder = async (
     transactionId: transactionId ? transactionId : null,
   });
 
-  for (const item of items) {
-    const product = await Product.findById(item.productId).populate("Variants");
+  if (order.status !== "Payment Failed") {
+    for (const item of items) {
+      const product = await Product.findById(item.productId).populate(
+        "Variants"
+      );
 
-    const variant = product.Variants.find(
-      (variant) =>
-        variant.price - (variant.price * item.discountPercentage) / 100 ===
-        item.price
-    );
+      const variant = product.Variants.find(
+        (variant) =>
+          variant.price - (variant.price * item.discountPercentage) / 100 ===
+          item.price
+      );
 
-    if (!variant) {
-      throw new Error(`Variant not found for ${product.Name}`);
+      if (!variant) {
+        throw new Error(`Variant not found for ${product.Name}`);
+      }
+
+      if (variant.stock < item.quantity) {
+        throw new Error(`Insufficient stock for ${product.Name} variant`);
+      }
+
+      variant.stock -= item.quantity;
+      await Variant.findByIdAndUpdate(variant._id, { stock: variant.stock });
     }
-
-    if (variant.stock < item.quantity) {
-      throw new Error(`Insufficient stock for ${product.Name} variant`);
-    }
-
-    variant.stock -= item.quantity;
-    await Variant.findByIdAndUpdate(variant._id, { stock: variant.stock });
   }
 
   await Cart.findOneAndUpdate({ user: userId }, { $set: { products: [] } });
@@ -239,11 +276,16 @@ const handleWalletPayment = async (req, res) => {
   try {
     const userID = req.user._id;
     const { totalPrice, orderDetails } = req.body;
-    
-    const wallet =await Wallet.findOne({ userID });
-if(!wallet){
-  return createResponse(res,404,false,"User Dont Have Wallet Change the Payment Method")
-}
+
+    const wallet = await Wallet.findOne({ userID });
+    if (!wallet) {
+      return createResponse(
+        res,
+        404,
+        false,
+        "User Dont Have Wallet Change the Payment Method"
+      );
+    }
     if (wallet.balance < totalPrice) {
       return res.status(400).json({ message: "Insufficient wallet balance" });
     }
@@ -251,12 +293,12 @@ if(!wallet){
     wallet.balance -= totalPrice;
     const order = await createOrder(userID, orderDetails);
     wallet.transactions.push({
-      orderID:order._id,
-      amount:totalPrice,
-      method:order.paymentMethod,
-      type:"debit",
-      date:Date.now()
-    })
+      orderID: order._id,
+      amount: totalPrice,
+      method: order.paymentMethod,
+      type: "debit",
+      date: Date.now(),
+    });
 
     await wallet.save();
     return createResponse(res, 201, true, "Order created successfully", {

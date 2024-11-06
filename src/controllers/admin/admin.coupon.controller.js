@@ -64,12 +64,32 @@ const deleteCoupon = async (req, res) => {
 };
 
 const getAllCoupons = async (req, res) => {
+  console.log('inside the coupons')
   try {
     const coupons = await Coupon.find({});
- return createResponse(res,200,true,"Coupons retrieved successfully.",coupons)
+
+    const updatedCoupons = await Promise.all(
+      coupons.map(async (coupon) => {
+        if (Date.now() > coupon.expiryDate) {
+          console.log("inside the map")
+          coupon.expiryDate = null;
+          await coupon.save();
+          return coupon
+        }
+        return coupon;
+      })
+    );
+    
+    console.log(updatedCoupons);
+    
+    
+     
+
+ return createResponse(res,200,true,"Coupons retrieved successfully.",updatedCoupons)
     
 
   } catch (error) {
+    console.log(error)
     serverErrorResponse(res,"Failed to fetch coupon codes")
   }
 };
