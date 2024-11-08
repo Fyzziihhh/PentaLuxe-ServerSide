@@ -7,7 +7,7 @@ import cookieParser from 'cookie-parser'
 import session from 'express-session'
 import nocache from 'nocache'
 dotenv.config({ path: "src/.env" });
-import MongoStore from 'connect-mongo'; 
+// import MongoStore from 'connect-mongo'; 
 process.setMaxListeners(20);
 const app = express();
 console.log(`MongoDB URL: ${process.env.MONGO_URL}`);
@@ -24,13 +24,12 @@ app.use(session({
   secret: process.env.ADMIN_SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({
-    mongoUrl: process.env.MONGO_URL
-  }),
+  // store: MongoStore.create({
+  //   mongoUrl: process.env.MONGO_URL
+  // }),
   cookie: {
     maxAge: 24 * 60 * 60 * 1000,
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production' 
   }
   
 }));
