@@ -18,9 +18,11 @@ app.use(session({
     mongoUrl: process.env.MONGO_URL
   }),
   cookie: {
-    maxAge: 24 * 60 * 60 * 1000, // 1 day
-    httpOnly: true
+    maxAge: 24 * 60 * 60 * 1000,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production' 
   }
+  
 }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
