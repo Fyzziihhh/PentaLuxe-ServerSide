@@ -10,6 +10,7 @@ dotenv.config({ path: "src/.env" });
 import MongoStore from 'connect-mongo'; 
 process.setMaxListeners(20);
 const app = express();
+console.log(`MongoDB URL: ${process.env.MONGO_URL}`);
 app.use(session({
   secret: process.env.ADMIN_SESSION_SECRET,
   resave: false,
@@ -48,6 +49,5 @@ connectDB();
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-  console.log(`MongoDB URL: ${process.env.MONGO_URL}`);
   console.log(`Admin Session Secret: ${process.env.ADMIN_SESSION_SECRET}`);
 });
