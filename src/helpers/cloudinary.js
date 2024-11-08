@@ -28,7 +28,7 @@ const uploadOnCloudinary = async (localFilePath) => {
           })
       )
     );
-    // console.log("Upload response:", response);
+    console.log("Upload response:", response);
 
     // File has been uploaded successfully
     return response.map((file) => file.secure_url);

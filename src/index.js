@@ -11,15 +11,15 @@ import MongoStore from 'connect-mongo';
 process.setMaxListeners(20);
 const app = express();
 app.use(session({
-  secret: process.env.ADMIN_SESSION_SECRET, // Secret for signing the session ID cookie
-  resave: false, // Don't save session if uninitialized
-  saveUninitialized: false, // Don't create session until something stored
+  secret: process.env.ADMIN_SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
   store: MongoStore.create({
-    mongoUrl: process.env.MONGO_URL// MongoDB connection string
+    mongoUrl: process.env.MONGO_URL
   }),
   cookie: {
     maxAge: 24 * 60 * 60 * 1000, // 1 day
-    httpOnly: true // Prevent JavaScript access to the cookie
+    httpOnly: true
   }
 }));
 app.use(express.urlencoded({ extended: true }));
@@ -46,4 +46,6 @@ connectDB();
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  console.log(`MongoDB URL: ${process.env.MONGO_URL}`);
+  console.log(`Admin Session Secret: ${process.env.ADMIN_SESSION_SECRET}`);
 });

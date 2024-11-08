@@ -25,10 +25,14 @@ const productDetails = asyncHandler(async (req, res) => {
 
 const getProducts = async (req, res) => {
   try {
-    console.log("inside the getproduct")
-    const products = await Product.find().populate("Variants").populate('CategoryId').sort({createdAt:-1});
-  
-    const filterdProductsByCategory=products.filter(product=>product.CategoryId!==null)
+    const products = await Product.find()
+      .populate("Variants")
+      .populate("CategoryId")
+      .sort({ createdAt: -1 });
+
+    const filterdProductsByCategory = products.filter(
+      (product) => product.CategoryId !== null
+    );
     return createResponse(
       res,
       200,
@@ -42,22 +46,20 @@ const getProducts = async (req, res) => {
   }
 };
 
-
-const searchProductsByCategory=async(req,res)=>{
+const searchProductsByCategory = async (req, res) => {
   const { text } = req.body;
   console.log(text);
 
   if (!text) {
-    return createResponse(res,400,false,"No Text provided")
+    return createResponse(res, 400, false, "No Text provided");
   }
 
   try {
     const products = await Product.find({}).populate("CategoryId");
-    const regex = new RegExp(text, 'i');  // 'i' is for case-insensitive search
-    const searchedProducts = products.filter(product => product.Name.match(regex));
-    
-
-    console.log(searchedProducts);
+    const regex = new RegExp(text, "i"); // 'i' is for case-insensitive search
+    const searchedProducts = products.filter((product) =>
+      product.Name.match(regex)
+    );
 
     if (!searchedProducts || searchedProducts.length === 0) {
       return res.status(404).json({
@@ -78,6 +80,6 @@ const searchProductsByCategory=async(req,res)=>{
       message: "Server error. Please try again later.",
     });
   }
-}
+};
 
-export { productDetails, getProducts,searchProductsByCategory };
+export { productDetails, getProducts, searchProductsByCategory };

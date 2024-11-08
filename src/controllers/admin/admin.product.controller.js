@@ -17,8 +17,8 @@ const uploadFilesAndAddProducts = asyncHandler(async (req, res) => {
       DiscountPercentage,
       productVolumes,
     } = parsedBody;
-    console.log(parsedBody);
-    console.log(productVolumes);
+    console.log("inside the admin add product ",parsedBody);
+    console.log("inside the produt admin22",productVolumes);
 
     if (!req.files || req.files.length === 0) {
       return res
