@@ -11,6 +11,15 @@ import MongoStore from 'connect-mongo';
 process.setMaxListeners(20);
 const app = express();
 console.log(`MongoDB URL: ${process.env.MONGO_URL}`);
+import cors from 'cors';
+
+
+app.use(cors({
+  origin: 'https://pentaluxeshop.vercel.app', 
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], 
+  allowedHeaders: ['Content-Type', 'Authorization'], 
+  credentials: true, 
+}));
 app.use(session({
   secret: process.env.ADMIN_SESSION_SECRET,
   resave: false,
