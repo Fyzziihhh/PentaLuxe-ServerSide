@@ -16,7 +16,7 @@ app.use(
   cors({
     origin: "https://pentaluxeshop.vercel.app",
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "authorization"],
     credentials: true,
   })
 );
@@ -57,5 +57,5 @@ connectDB();
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-  console.log(`Admin Session Secret: ${process.env.ADMIN_SESSION_SECRET}`);
+  
 });
