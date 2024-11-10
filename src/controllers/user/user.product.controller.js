@@ -2,6 +2,7 @@ import Product from "../../models/product.model.js";
 import { asyncHandler } from "../../helpers/asyncHandler.js";
 import { createResponse } from "../../helpers/responseHandler.js";
 const productDetails = asyncHandler(async (req, res) => {
+
   const { id } = req.params;
   if (!id) return createResponse(res, 404, false, "Product ID is required");
 

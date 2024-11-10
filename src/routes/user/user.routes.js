@@ -81,7 +81,7 @@ router.delete("/address-book/:id", verifyToken, userStatus, DeleteAddress);
 // Product routes with userStatus middleware
 router.get("/products", userStatus, getProducts);
 router.get("/products/:id", productDetails);
-router.get('/related-products')
+// router.get('/related-products')
 router.post('/search-products-by-category',searchProductsByCategory)
 
 // Category routes
@@ -131,8 +131,8 @@ router.get("/coupons", userStatus, getAllAvailableCoupons);
 // Wishlist routes with userStatus middleware
 router.post("/wishlist", verifyToken, userStatus, AddToWishlist);
 router.delete("/wishlist/:id", verifyToken, userStatus, removeFromWishlist);
-router.get("/wishlist", verifyToken, userStatus, fetchWishlistProducts);
-router.get("/wishlist/:id", verifyToken, userStatus, checkProductInWishlist);
+router.get("/wishlist", userStatus, fetchWishlistProducts);
+router.get("/wishlist/:id", userStatus, checkProductInWishlist);
 
 router.get("/wallet", verifyToken, userStatus, getUserWallet);
 router.post("/wallet-payment", verifyToken, handleWalletPayment);

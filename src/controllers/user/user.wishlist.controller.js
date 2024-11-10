@@ -137,9 +137,10 @@ const fetchWishlistProducts = async (req, res) => {
 
 const checkProductInWishlist = async (req, res) => {
   const { id } = req.params;
-  const userId = req.user._id;
-
-
+  const userId = req.user?._id;
+  if(!userId){
+    return createResponse(res, 200, false, "No User found");
+  }
 
   try {
     const wishlist = await Wishlist.findOne({user:userId });
@@ -148,7 +149,6 @@ const checkProductInWishlist = async (req, res) => {
       return createResponse(res, 200, false, "Wishlist not found");
     }
     const isInWishlist = wishlist.products.find(product=>product.product._id.toString()===id)
-
     return createResponse(res, 200, isInWishlist?true:false);
   } catch (error) {
     serverErrorResponse(res);
