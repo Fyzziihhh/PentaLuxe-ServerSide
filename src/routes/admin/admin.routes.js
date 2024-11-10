@@ -20,7 +20,6 @@ import {
   searchUsers,
   updateUserStatus,
 } from "../../controllers/admin/admin.user.controller.js";
-import adminAuthMiddleware from "../../middlewares/adminSession.middleware.js";
 import {
   changeOrderStatus,
   getAllOrders,
@@ -45,47 +44,46 @@ const router = express.Router();
 
 // Admin routes
 router.post("/login", adminLogin);
-router.post("/logout", adminAuthMiddleware, adminLogOut);
+router.post("/logout", adminLogOut);
 
 // Category routes
 router.post(
   "/upload-category",
-  adminAuthMiddleware,
   uploader.single("categoryImage"),
   uploadFilesAndAddCategory
 );
-router.get("/categories", adminAuthMiddleware, getCategories);
-router.delete("/categories/:id", adminAuthMiddleware, deleteCategory);
+router.get("/categories", getCategories);
+router.delete("/categories/:id", deleteCategory);
 
 // Product routes
 router.post("/products", uploader.any(), uploadFilesAndAddProducts);
-router.get("/products", adminAuthMiddleware, getAllProducts);
-router.delete("/products/:id", adminAuthMiddleware, deleteProduct);
+router.get("/products", getAllProducts);
+router.delete("/products/:id", deleteProduct);
 router.get("/products/:id", singleProudct);
 router.put("/products/:id", uploader.single('file'), updateProduct);
 router.post("/search-product", searchProducts);
 
 // Customer routes
-router.get("/customers", adminAuthMiddleware, getAllUser);
+router.get("/customers", getAllUser);
 router.post("/search-user", searchUsers);
 
 // Status update route
-router.patch("/statusUpdate", adminAuthMiddleware, updateUserStatus);
+router.patch("/statusUpdate", updateUserStatus);
 
-//orders routes
+// Orders routes
 router.get("/orders", getAllOrders);
 router.patch("/orders", changeOrderStatus);
 
-//coupon routes
+// Coupon routes
 router.post("/coupon", createCoupon);
 router.get("/coupon", getAllCoupons);
 router.delete("/coupon/:id", deleteCoupon);
 
-//offer
+// Offer
 router.patch("/product-offer", processProductOffer);
 router.patch("/category-offer", processCategoryOffer);
 
-//sales report
+// Sales report
 router.post("/sales-report", generateSalesReport);
 router.get("/dashboard", getAdminDashboard);
 router.get("/best-selling-products", bestSellingProducts);
