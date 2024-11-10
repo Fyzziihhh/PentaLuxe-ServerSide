@@ -2,10 +2,10 @@ import Cart from "../../models/cart.model.js";
 import Product from "../../models/product.model.js";
 import Coupon from "../../models/coupon.model.js";
 import jwt from "jsonwebtoken";
-import { createResponse } from "../../helpers/responseHandler.js";
+import { createResponse, serverErrorResponse } from "../../helpers/responseHandler.js";
 const addToCart = async (req, res) => {
   const { productId, volume } = req.body;
-  const user = req.user;
+  const user = req.user
 
   try {
     const product = await Product.findById(productId)
