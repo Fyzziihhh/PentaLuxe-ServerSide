@@ -257,8 +257,6 @@ const getAllAvailableCoupons = async (req, res) => {
 
     const AvailableCoupons = coupons.filter(coupon=>Date.now()>coupon.expiryDate)
 
-    console.log(updatedCoupons);
-
     return createResponse(
       res,
       200,
