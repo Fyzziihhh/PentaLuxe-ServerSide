@@ -1,3 +1,4 @@
+import cors from "cors";
 import express from "express";
 import dotenv from "dotenv";
 import connectDB from "./db/index.js";
@@ -9,7 +10,11 @@ import nocache from "nocache";
 dotenv.config({ path: "src/.env" });
 process.setMaxListeners(20);
 const app = express();
-import cors from "cors";
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static("public"));
+app.use(express.json());
+app.use(cookieParser());
+app.use(nocache());
 
 app.use(
   cors({
@@ -32,10 +37,6 @@ app.use(
   })
 );
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(cookieParser());
-app.use(nocache());
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -44,7 +45,6 @@ app.use((err, req, res, next) => {
 
   res.status(500).json({ message: "Something went wrong!" });
 });
-app.use(express.static("public"));
 
 // Routers
 app.use("/api/user", userRouter);

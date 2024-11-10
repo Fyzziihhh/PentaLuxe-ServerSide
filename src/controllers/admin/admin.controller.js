@@ -13,8 +13,6 @@ const adminLogin = (req, res) => {
   ) {
     req.session.isAdmin = true;
     req.session.email=email
-    console.log(req.session)
-  
     return res.status(200).json({
       success: true,
       message: "Admin LoggedIn Successfully",
