@@ -10,8 +10,8 @@ const createTransporter = () => {
     secure: true,
     requireTLS: true, 
     auth: {
-      user: process.env.USER, 
-      pass: process.env.PASSWORD, 
+      user: "5zziihhh@gmail.com", 
+      pass: "sfbu yyrs pjkq sdlo" , 
     },
   
   });
@@ -23,12 +23,10 @@ export const sendOTPEmail = async (email, otp) => {
   const mailOptions = {
     from: process.env.USER,  
     to: email,  
-    subject: 'Your OTP',  // Subject of the email
-    text: `Your OTP code is ${otp}`,  // OTP message
+    subject: 'Your OTP', 
+    text: `Your OTP code is ${otp}`,  
   };
-
   const transporter = createTransporter();
-
   try {
     // Send the email
     let info = await transporter.sendMail(mailOptions);
