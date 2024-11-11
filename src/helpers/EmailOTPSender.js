@@ -21,7 +21,7 @@ const createTransporter = () => {
 export const sendOTPEmail = async (email, otp) => {
   // Define the mail options (the email content)
   const mailOptions = {
-    from: process.env.USER,  
+    from: "5zziiihhh@gmail.com",  
     to: email,  
     subject: 'Your OTP', 
     text: `Your OTP code is ${otp}`,  
