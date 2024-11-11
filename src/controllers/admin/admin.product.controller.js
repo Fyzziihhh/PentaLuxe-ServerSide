@@ -181,7 +181,7 @@ const updateProduct = async (req, res) => {
      existingImages.push(response[0])
     }
   }
-
+    const category=await Category.findOne({categoryName})
     const product = await Product.findById(id).populate("Variants");
     const updatePromises = [];
     // Iterate through each quantity9
@@ -215,7 +215,7 @@ const updateProduct = async (req, res) => {
 
     product.Name = Name;
     product.Gender = Gender;
-    product.categoryName = categoryName;
+    product.CategoryId = category._id;
     product.DiscountPercentage = DiscountPercentage;
     product.Description = Description;
     product.ScentType = ScentType;
