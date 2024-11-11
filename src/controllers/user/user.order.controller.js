@@ -15,11 +15,11 @@ const getUserOrders = async (req, res) => {
       .populate({
         path: "items",
         populate: {
-          path: "productId", 
+          path: "productId",
           populate: {
-            path: "Variants"
-          }
-        }
+            path: "Variants",
+          },
+        },
       })
       .sort({ createdAt: -1 });
     return createResponse(
@@ -70,8 +70,8 @@ const cancelOrReturnOrder = async (req, res) => {
           "Order cannot be canceled at this stage."
         );
       }
-      if (payment === "Razorpay") {
-        console.log("inside Wallet");
+      if (payment === "Razorpay" ||payment === "Wallet" ) {
+        
         const wallet = await Wallet.findOne({ userID: req.user._id });
 
         console.log("wallet", wallet);
@@ -116,11 +116,8 @@ const cancelOrReturnOrder = async (req, res) => {
           "Only delivered orders can be returned."
         );
       }
-      if (payment === "Razorpay") {
-        console.log("inside Wallet");
+      if (payment === "Razorpay" ||payment === "Wallet" ) {
         const wallet = await Wallet.findOne({ userID: req.user._id });
-
-        console.log("wallet", wallet);
         if (!wallet) {
           const newWallet = await Wallet.create({
             userID: req.user._id,
