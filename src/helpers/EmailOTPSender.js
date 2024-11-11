@@ -10,7 +10,7 @@ const createTransporter = () => {
     secure: true,
     requireTLS: true, 
     auth: {
-      user: process.env.USER, 
+      user: process.env.NODE_MAILER_EMAIL, 
       pass: process.env.PASSWORD , 
     },
   
@@ -19,10 +19,10 @@ const createTransporter = () => {
 
 // Function to send an OTP email
 export const sendOTPEmail = async (email, otp) => {
-  console.log("inside the sendOTP",process.env.USER,process.env.PASSWORD)
+  console.log("inside the sendOTP",process.env.NODE_MAILER_EMAIL,process.env.PASSWORD)
   // Define the mail options (the email content)
   const mailOptions = {
-    from: process.env.USER,  
+    from: process.env.NODE_MAILER_EMAIL,  
     to: email,  
     subject: 'Your OTP', 
     text: `Your OTP code is ${otp}`,  
