@@ -6,16 +6,14 @@ dotenv.config();
 const createTransporter = () => {
   return nodemailer.createTransport({
     service: 'gmail', // Use Gmail's service
-    host: 'smtp.gmail.com', // Gmail's SMTP server
-    port: 587, // TLS port (587)
-    secure: false, // false for TLS (use true for SSL on port 465)
+    port: 587,
+    secure: true,
+    requireTLS: true, 
     auth: {
-      user: process.env.USER,  // Your Gmail address
-      pass: process.env.PASSWORD,  // Your App Password (NOT your regular Gmail password)
+      user: process.env.USER, 
+      pass: process.env.PASSWORD, 
     },
-    tls: {
-      rejectUnauthorized: true, // Ensures that the connection is secured
-    }
+  
   });
 };
 
@@ -23,8 +21,8 @@ const createTransporter = () => {
 export const sendOTPEmail = async (email, otp) => {
   // Define the mail options (the email content)
   const mailOptions = {
-    from: process.env.USER,  // Sender's email (your Gmail address)
-    to: email,  // Recipient's email address
+    from: process.env.USER,  
+    to: email,  
     subject: 'Your OTP',  // Subject of the email
     text: `Your OTP code is ${otp}`,  // OTP message
   };
