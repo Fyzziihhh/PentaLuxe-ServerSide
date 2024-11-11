@@ -19,6 +19,7 @@ const createTransporter = () => {
 
 // Function to send an OTP email
 export const sendOTPEmail = async (email, otp) => {
+  console.log("inside the sendOTP",process.env.USER,process.env.PASSWORD)
   // Define the mail options (the email content)
   const mailOptions = {
     from: process.env.USER,  
