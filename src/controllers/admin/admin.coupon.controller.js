@@ -92,15 +92,15 @@ const getAllCoupons = async (req, res) => {
      try {
          const expiryDate = new Date(coupon.expiryDate);
          if (Date.now() > expiryDate.getTime()) {
-           console.log("Coupon expired:", coupon.name);
            coupon.expiryDate = null; 
            await coupon.save(); 
+           console.log(coupon)
            return coupon;
          }
          return coupon;
      } catch (error) {
       console.log("coupon error",error)
-     } // No change needed, return coupon
+     } 
       })
     );
     
