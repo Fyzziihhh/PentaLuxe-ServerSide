@@ -1,17 +1,22 @@
 import Coupon from "../../models/coupon.model.js";
-import { createResponse, serverErrorResponse } from "../../helpers/responseHandler.js";
+import {
+  createResponse,
+  serverErrorResponse,
+} from "../../helpers/responseHandler.js";
 
 const createCoupon = async (req, res) => {
-    console.log(req.body)
+  console.log(req.body);
   try {
-    const { couponData:{
-      couponName,
-      discountPercentage,
-      maxDiscountPrice,
-      minimumPurchasePrice,
-      expiryDate,}
+    const {
+      couponData: {
+        couponName,
+        discountPercentage,
+        maxDiscountPrice,
+        minimumPurchasePrice,
+        expiryDate,
+      },
     } = req.body;
-    console.log(couponName,discountPercentage,maxDiscountPrice)
+    console.log(couponName, discountPercentage, maxDiscountPrice);
 
     if (
       !couponName ||
@@ -28,7 +33,12 @@ const createCoupon = async (req, res) => {
 
     const existingCoupon = await Coupon.findOne({ couponName });
     if (existingCoupon) {
-        return createResponse(res,409,false,"Coupon with this name already exists.")
+      return createResponse(
+        res,
+        409,
+        false,
+        "Coupon with this name already exists."
+      );
     }
 
     const newCoupon = await Coupon.create({
@@ -38,59 +48,72 @@ const createCoupon = async (req, res) => {
       minimumPurchasePrice,
       expiryDate,
     });
-    console.log(newCoupon)
- return createResponse(res,201,true,"Coupon created successfully.",newCoupon)
-   
+    console.log(newCoupon);
+    return createResponse(
+      res,
+      201,
+      true,
+      "Coupon created successfully.",
+      newCoupon
+    );
   } catch (error) {
     console.error(error.message);
-   return serverErrorResponse(res)
+    return serverErrorResponse(res);
   }
 };
 
 const editCoupon = async (req, res) => {};
 
 const deleteCoupon = async (req, res) => {
-    const id=req.params.id
-   
-    try {
-        const coupon=await Coupon.findByIdAndDelete(id)
-        if(!coupon){
-            return createResponse(res,404,false,"No Coupon is Founded with The Provided Id")
-        }
-        return createResponse(res,200,true,"Coupon Removed Successfully")
-    } catch (error) {
-        serverErrorResponse(res)
+  const id = req.params.id;
+
+  try {
+    const coupon = await Coupon.findByIdAndDelete(id);
+    if (!coupon) {
+      return createResponse(
+        res,
+        404,
+        false,
+        "No Coupon is Founded with The Provided Id"
+      );
     }
+    return createResponse(res, 200, true, "Coupon Removed Successfully");
+  } catch (error) {
+    serverErrorResponse(res);
+  }
 };
 
 const getAllCoupons = async (req, res) => {
-  console.log('inside the coupons')
+  console.log("inside the coupons");
   try {
     const coupons = await Coupon.find({});
-
     const updatedCoupons = await Promise.all(
       coupons.map(async (coupon) => {
-        if (Date.now() > coupon.expiryDate) {
-          console.log("inside the map")
-          coupon.expiryDate = null;
-          await coupon.save();
-          return coupon
+        const expiryDate = new Date(coupon.expiryDate);
+        if (Date.now() > expiryDate.getTime()) {
+          console.log("Coupon expired:", coupon.name);
+          coupon.expiryDate = null; 
+          await coupon.save(); 
+          return coupon;
         }
-        return coupon;
+    
+        return coupon; // No change needed, return coupon
       })
     );
     
+
     console.log(updatedCoupons);
-    
-    
-     
 
- return createResponse(res,200,true,"Coupons retrieved successfully.",updatedCoupons)
-    
-
+    return createResponse(
+      res,
+      200,
+      true,
+      "Coupons retrieved successfully.",
+      updatedCoupons
+    );
   } catch (error) {
-    console.log(error)
-    serverErrorResponse(res,"Failed to fetch coupon codes")
+    console.log(error);
+    serverErrorResponse(res, "Failed to fetch coupon codes");
   }
 };
 
