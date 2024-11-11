@@ -1,36 +1,44 @@
 import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
+dotenv.config();
 
-// Create a transporter object
+// Create a transporter object using Gmail's SMTP server with TLS
 const createTransporter = () => {
   return nodemailer.createTransport({
-    service: 'gmail',
-    host: 'smtp.gmail.com',
-    port: 587, // Use 465 if you want a fully secure connection
-    secure: false, // Use true for 465, false for 587
+    service: 'gmail', // Use Gmail's service
+    host: 'smtp.gmail.com', // Gmail's SMTP server
+    port: 587, // TLS port (587)
+    secure: false, // false for TLS (use true for SSL on port 465)
     auth: {
-      user: process.env.USER, // Your email address
-      pass: process.env.PASSWORD, // Your App Password
+      user: process.env.USER,  // Your Gmail address
+      pass: process.env.PASSWORD,  // Your App Password (NOT your regular Gmail password)
     },
+    tls: {
+      rejectUnauthorized: true, // Ensures that the connection is secured
+    }
   });
 };
 
-// Function to send an email
+// Function to send an OTP email
 export const sendOTPEmail = async (email, otp) => {
-  // Define email options
+  // Define the mail options (the email content)
   const mailOptions = {
-    from: process.env.USER,
-    to: email,
-    subject: 'Your OTP',
-    text: `Your OTP code is ${otp}`, // Add some context to the OTP message
+    from: process.env.USER,  // Sender's email (your Gmail address)
+    to: email,  // Recipient's email address
+    subject: 'Your OTP',  // Subject of the email
+    text: `Your OTP code is ${otp}`,  // OTP message
   };
 
-  // Create a transporter
   const transporter = createTransporter();
 
   try {
+    // Send the email
     let info = await transporter.sendMail(mailOptions);
     console.log('Email sent: ' + info.response);
   } catch (error) {
     console.error('Error sending email:', error);
+    if (error.responseCode === 534) {
+      console.error('Authentication failed. Please check your email and app password.');
+    }
   }
 };
