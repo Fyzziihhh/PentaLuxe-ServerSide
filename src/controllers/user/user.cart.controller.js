@@ -250,25 +250,25 @@ const updateCartTotalPrice = async (req, res) => {
   }
 };
 
-const getAllAvailableCoupons = async (req, res) => {
+// const getAllAvailableCoupons = async (req, res) => {
 
-  try {
-    const coupons = await Coupon.find({});
+//   try {
+//     const coupons = await Coupon.find({});
 
-    const AvailableCoupons = coupons.filter(coupon=>Date.now()>coupon.expiryDate)
-console.log("Inside the UserAvailable Coupon",AvailableCoupons)
-    return createResponse(
-      res,
-      200,
-      true,
-      "Coupons retrieved successfully.",
-      AvailableCoupons
-    );
-  } catch (error) {
-    console.log(error);
-    serverErrorResponse(res, "Failed to fetch coupon codes");
-  }
-};
+//     const AvailableCoupons = coupons.filter(coupon=>Date.now()>coupon.expiryDate)
+// console.log("Inside the UserAvailable Coupon",AvailableCoupons)
+//     return createResponse(
+//       res,
+//       200,
+//       true,
+//       "Coupons retrieved successfully.",
+//       AvailableCoupons
+//     );
+//   } catch (error) {
+//     console.log(error);
+//     serverErrorResponse(res, "Failed to fetch coupon codes");
+//   }
+// };
 
 export {
   addToCart,

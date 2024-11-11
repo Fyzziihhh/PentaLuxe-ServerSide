@@ -30,7 +30,6 @@ import {
 import {
   addToCart,
   changeProductQuantity,
-  getAllAvailableCoupons,
   getUserCart,
   removeProduct,
   updateCartTotalPrice,
@@ -126,7 +125,7 @@ router.get("/getkey", async (req, res) =>
 );
 
 // Coupons routes
-router.get("/coupons", userStatus, getAllAvailableCoupons);
+router.get("/coupons", userStatus,getAllCoupons );
 
 // Wishlist routes with userStatus middleware
 router.post("/wishlist", verifyToken, userStatus, AddToWishlist);
