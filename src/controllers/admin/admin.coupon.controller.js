@@ -89,15 +89,18 @@ const getAllCoupons = async (req, res) => {
     const coupons = await Coupon.find({});
     const updatedCoupons = await Promise.all(
       coupons.map(async (coupon) => {
-        const expiryDate = new Date(coupon.expiryDate);
-        if (Date.now() > expiryDate.getTime()) {
-          console.log("Coupon expired:", coupon.name);
-          coupon.expiryDate = null; 
-          await coupon.save(); 
-          return coupon;
-        }
-    
-        return coupon; // No change needed, return coupon
+     try {
+         const expiryDate = new Date(coupon.expiryDate);
+         if (Date.now() > expiryDate.getTime()) {
+           console.log("Coupon expired:", coupon.name);
+           coupon.expiryDate = null; 
+           await coupon.save(); 
+           return coupon;
+         }
+         return coupon;
+     } catch (error) {
+      console.log("coupon error",error)
+     } // No change needed, return coupon
       })
     );
     
