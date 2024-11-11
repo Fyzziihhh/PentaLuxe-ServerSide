@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
    try {
      if (req.user) {
        if (req.user.status === "BLOCKED") {
-         return res.status(403).json({ message: "Your account has been blocked" });
+         return res.status(401).json({ message: "Your account has been blocked" });
         }
         return next();
       }
