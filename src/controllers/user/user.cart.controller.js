@@ -276,5 +276,5 @@ export {
   changeProductQuantity,
   removeProduct,
   updateCartTotalPrice,
-  getAllAvailableCoupons,
+  
 };
