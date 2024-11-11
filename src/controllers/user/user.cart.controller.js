@@ -251,12 +251,12 @@ const updateCartTotalPrice = async (req, res) => {
 };
 
 const getAllAvailableCoupons = async (req, res) => {
-  console.log("inside the coupons");
+
   try {
     const coupons = await Coupon.find({});
 
     const AvailableCoupons = coupons.filter(coupon=>Date.now()>coupon.expiryDate)
-
+console.log("Inside the UserAvailable Coupon",AvailableCoupons)
     return createResponse(
       res,
       200,
