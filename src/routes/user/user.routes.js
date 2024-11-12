@@ -12,6 +12,7 @@ import verifyToken from "../../middlewares/verifyToken.middlerware.js";
 import userStatus from "../../middlewares/userStatus.middleware.js"; // Make sure the path is correct
 import {
   getProducts,
+  getRelatedProducts,
   productDetails,
   searchProductsByCategory,
 } from "../../controllers/user/user.product.controller.js";
@@ -80,7 +81,7 @@ router.delete("/address-book/:id", verifyToken, userStatus, DeleteAddress);
 // Product routes with userStatus middleware
 router.get("/products", userStatus, getProducts);
 router.get("/products/:id", productDetails);
-// router.get('/related-products')
+router.get('/related-products',getRelatedProducts)
 router.post('/search-products-by-category',searchProductsByCategory)
 
 // Category routes

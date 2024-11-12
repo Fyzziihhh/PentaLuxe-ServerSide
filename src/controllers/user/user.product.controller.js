@@ -1,6 +1,8 @@
 import Product from "../../models/product.model.js";
 import { asyncHandler } from "../../helpers/asyncHandler.js";
-import { createResponse } from "../../helpers/responseHandler.js";
+import { createResponse, serverErrorResponse } from "../../helpers/responseHandler.js";
+import Category from "../../models/category.model.js";
+import { create } from "connect-mongo";
 const productDetails = asyncHandler(async (req, res) => {
 
   const { id } = req.params;
@@ -83,4 +85,20 @@ const searchProductsByCategory = async (req, res) => {
   }
 };
 
-export { productDetails, getProducts, searchProductsByCategory };
+const getRelatedProducts=async(req,res)=>{
+  try {
+    const CategoryId=req.query.category
+      const category=await Category.findById(CategoryId)
+      if(!category){
+        return createResponse(res,404,false,"Category Not Found")
+      
+      }
+      const relatedProducts = await Product.find({ CategoryId }).limit(3);
+      return createResponse(res,200,true,"related product fetched Successfully",relatedProducts)
+  } catch (error) {
+    serverErrorResponse(res)
+  }
+
+}
+
+export { productDetails, getProducts, searchProductsByCategory ,getRelatedProducts};
