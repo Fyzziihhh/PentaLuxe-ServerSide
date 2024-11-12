@@ -94,7 +94,7 @@ const getRelatedProducts=async(req,res)=>{
         return createResponse(res,404,false,"Category Not Found")
       
       }
-      const relatedProducts = await Product.find({ CategoryId }).limit(3);
+      const relatedProducts = await Product.find({ CategoryId:category._id }).limit(3);
       return createResponse(res,200,true,"related product fetched Successfully",relatedProducts)
   } catch (error) {
     serverErrorResponse(res)
