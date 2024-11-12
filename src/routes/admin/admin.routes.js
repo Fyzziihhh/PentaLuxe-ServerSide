@@ -39,6 +39,7 @@ import {
   bestSellingProducts,
   getAdminDashboard,
 } from "../../controllers/admin/admin.dashboard.controller.js";
+import adminAuthMiddleware from "../../middlewares/adminSession.middleware.js";
 
 const router = express.Router();
 
@@ -57,7 +58,7 @@ router.delete("/categories/:id", deleteCategory);
 
 // Product routes
 router.post("/products", uploader.any(), uploadFilesAndAddProducts);
-router.get("/products", getAllProducts);
+router.get("/products",adminAuthMiddleware, getAllProducts);
 router.delete("/products/:id", deleteProduct);
 router.get("/products/:id", singleProudct);
 router.put("/products/:id", uploader.single('file'), updateProduct);
