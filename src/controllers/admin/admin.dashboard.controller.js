@@ -107,7 +107,7 @@ const getAdminDashboard = async (req, res) => {
       console.log("Daily", DailySales);
       console.log("daily", dailySales);
       const totalSales = DailySales.reduce(
-        (acc, sales) => acc + sales.sales.toFixed(0),
+        (acc, sales) => acc + sales.sales,
         0
       );
       const totalOrders = await Order.countDocuments({
