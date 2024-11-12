@@ -19,10 +19,10 @@ const adminLogin = (req, res) => {
         return res.status(500).json({ message: "Session error" });
       }
       console.log("Session after login:", req.session);
-      return res.status(200).json({
-        success: true,
-        message: "Admin LoggedIn Successfully",
-      });
+    });
+    return res.status(200).json({
+      success: true,
+      message: "Admin LoggedIn Successfully",
     });
   }
 
