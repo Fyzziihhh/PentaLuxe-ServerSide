@@ -86,9 +86,10 @@ const searchProductsByCategory = async (req, res) => {
 };
 
 const getRelatedProducts=async(req,res)=>{
+  console.log(req.query)
   try {
-    const CategoryId=req.query.category
-      const category=await Category.findById(CategoryId)
+    const categoryName=req.query.category
+      const category=await Category.findOne({categoryName})
       if(!category){
         return createResponse(res,404,false,"Category Not Found")
       
