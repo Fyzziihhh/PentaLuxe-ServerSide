@@ -19,6 +19,7 @@ const getAdminDashboard = async (req, res) => {
       const monthlySales = await Order.aggregate([
         {
           $match: { $expr: { $eq: [{ $year: "$orderDate" }, currentYear] } },
+          status: { $in: ["delivered", "confirmed", "shipped"] }
         },
         {
           $group: {
@@ -72,11 +73,12 @@ const getAdminDashboard = async (req, res) => {
           $match: {
             $expr: {
               $and: [
-                { $eq: [{ $month: "$orderDate" }, currentMonth] },
-                { $eq: [{ $year: "$orderDate" }, currentYear] },
-              ],
+                { $eq: [{ $month: "$orderDate" }, currentMonth] },  
+                { $eq: [{ $year: "$orderDate" }, currentYear] }  
+              ]
             },
-          },
+            status: { $in: ["delivered", "confirmed", "shipped"] }  
+          }
         },
         {
           $group: {
