@@ -35,7 +35,10 @@ const getAdminDashboard = async (req, res) => {
       ]);
       
 
-      const totalOrders = (await Order.find()).length;
+      const totalOrders = await Order.countDocuments({
+        status: { $in: ["Confirmed", "Delivered", "Shipped"] }
+      });
+      
       // Prepare all months with sales initialized to 0
       const monthNames = [
         "January",
@@ -107,7 +110,9 @@ const getAdminDashboard = async (req, res) => {
         (acc, sales) => acc + sales.sales,
         0
       );
-      const totalOrders = (await Order.find()).length;
+      const totalOrders = await Order.countDocuments({
+        status: { $in: ["Confirmed", "Delivered", "Shipped"] }
+      });
       return createResponse(
         res,
         200,
