@@ -7,6 +7,8 @@ import adminRouter from "./routes/admin/admin.routes.js";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import nocache from "nocache";
+import MongoStore from 'connect-mongo'
+
 dotenv.config({ path: "src/.env" });
 process.setMaxListeners(20);
 const app = express();
@@ -15,7 +17,7 @@ app.use(express.static("public"));
 app.use(express.json());
 app.use(cookieParser());
 app.use(nocache());
-
+const mongoUrl = process.env.MONGO_URL || 'mongodb+srv://5zziiihhh:pentaluxe@pentaluxe-e-commerce.ra5wd.mongodb.net/?retryWrites=true&w=majority&appName=PentaLuxe-E-Commerce';
 app.use(
   cors({
     origin: "https://pentaluxeshop.vercel.app",
@@ -34,6 +36,9 @@ app.use(
       httpOnly: true,
       secure:true
     },
+    store:  MongoStore.create({
+     mongoUrl
+    })
   })
 );
 
