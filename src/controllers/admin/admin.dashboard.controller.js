@@ -98,7 +98,7 @@ const getAdminDashboard = async (req, res) => {
       // Create an array for all days of the month (1 to 31)
       const DailySales = Array.from({ length: 31 }, (_, i) => ({
         field: `${i + 1}`,
-        sales: dailySales.find((sale) => sale._id === i + 1)?.totalAmount || 0,
+        sales: dailySales.find((sale) => sale._id.day === i + 1)?.totalAmount || 0,
       }));
       console.log("Daily", DailySales);
       console.log("daily", dailySales);
