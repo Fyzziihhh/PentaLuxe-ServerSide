@@ -20,7 +20,7 @@ const getAdminDashboard = async (req, res) => {
         {
           $match: {
             $and: [
-              { status: { $in: ["delivered", "confirmed", "shipped"] } },
+              { status: { $in: ["Delivered", "Confirmed", "Shipped"] } },
               { $expr: { $eq: [{ $year: "$orderDate" }, currentYear] } }
             ]
           }
@@ -80,7 +80,7 @@ const getAdminDashboard = async (req, res) => {
               $and: [
                 { $eq: [{ $month: "$orderDate" }, currentMonth] },
                 { $eq: [{ $year: "$orderDate" }, currentYear] },
-                { $in: ["$status", ["delivered", "confirmed", "shipped"]] } // Moved status inside $expr
+                { $in: ["$status", ["Delivered", "Confirmed", "Shipped"]] } // Moved status inside $expr
               ]
             }
           }
