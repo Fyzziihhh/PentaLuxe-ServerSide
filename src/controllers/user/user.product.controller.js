@@ -88,13 +88,13 @@ const searchProductsByCategory = async (req, res) => {
 const getRelatedProducts=async(req,res)=>{
   console.log("inside related products")
   try {
-    const {categoryName}=req.body
+    const {categoryName,productID}=req.body
       const category=await Category.findOne({categoryName})
       if(!category){
         return createResponse(res,404,false,"Category Not Found")
       
       }
-      const relatedProducts = await Product.find({ CategoryId:category._id }).limit(3);
+      const relatedProducts = await Product.find({ CategoryId:category._id }).populate("Variants").populate("CategoryId").limit(3);
       return createResponse(res,200,true,"related product fetched Successfully",relatedProducts)
   } catch (error) {
     serverErrorResponse(res)
