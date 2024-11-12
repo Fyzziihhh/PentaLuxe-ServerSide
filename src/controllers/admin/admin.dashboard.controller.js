@@ -21,24 +21,23 @@ const getAdminDashboard = async (req, res) => {
           $match: {
             $and: [
               { status: { $in: ["Delivered", "Confirmed", "Shipped"] } },
-              { $expr: { $eq: [{ $year: "$orderDate" }, currentYear] } }
-            ]
-          }
+              { $expr: { $eq: [{ $year: "$orderDate" }, currentYear] } },
+            ],
+          },
         },
         {
           $group: {
             _id: { month: { $month: "$orderDate" } },
-            totalAmount: { $sum: "$totalAmount" }
-          }
+            totalAmount: { $sum: "$totalAmount" },
+          },
         },
-        { $sort: { "_id.month": 1 } }
+        { $sort: { "_id.month": 1 } },
       ]);
-      
 
       const totalOrders = await Order.countDocuments({
-        status: { $in: ["Confirmed", "Delivered", "Shipped"] }
+        status: { $in: ["Confirmed", "Delivered", "Shipped"] },
       });
-      
+
       // Prepare all months with sales initialized to 0
       const monthNames = [
         "January",
@@ -57,14 +56,15 @@ const getAdminDashboard = async (req, res) => {
       const MonthlySales = monthNames.map((name, index) => ({
         field: name,
         sales:
-          monthlySales.find((sale) => sale._id.month === index + 1)
+          monthlySales
+            .find((sale) => sale._id.month === index + 1)
             ?.totalAmount.toFixed(0) || 0,
       }));
 
-      console.log("Monthly",MonthlySales);
-      console.log("monthly",monthlySales);
+      console.log("Monthly", MonthlySales);
+      console.log("monthly", monthlySales);
       const totalSales = MonthlySales.reduce(
-        (acc, sales) => acc + sales.sales,
+        (acc, sales) => acc + Number(sales.sales),
         0
       );
 
@@ -84,41 +84,49 @@ const getAdminDashboard = async (req, res) => {
               $and: [
                 { $eq: [{ $month: "$orderDate" }, currentMonth] },
                 { $eq: [{ $year: "$orderDate" }, currentYear] },
-                { $in: ["$status", ["Delivered", "Confirmed", "Shipped"]] } // Moved status inside $expr
-              ]
-            }
-          }
+                { $in: ["$status", ["Delivered", "Confirmed", "Shipped"]] }, // Moved status inside $expr
+              ],
+            },
+          },
         },
         {
           $group: {
             _id: { day: { $dayOfMonth: "$orderDate" } },
-            totalAmount: { $sum: "$totalAmount" }
-          }
+            totalAmount: { $sum: "$totalAmount" },
+          },
         },
-        { $sort: { "_id.day": 1 } }
+        { $sort: { "_id.day": 1 } },
       ]);
-      
 
       // Create an array for all days of the month (1 to 31)
       const DailySales = Array.from({ length: 31 }, (_, i) => ({
         field: `${i + 1}`,
-        sales: dailySales.find((sale) => sale._id.day === i + 1)?.totalAmount.toFixed(0) || 0,
+        sales:
+          dailySales
+            .find((sale) => sale._id.day === i + 1)
+            ?.totalAmount.toFixed(0) || 0,
       }));
       console.log("Daily", DailySales);
       console.log("daily", dailySales);
       const totalSales = DailySales.reduce(
-        (acc, sales) => acc + sales.sales,
+        (acc, sales) => acc + Number(sales.sales),
         0
       );
       const totalOrders = await Order.countDocuments({
-        status: { $in: ["Confirmed", "Delivered", "Shipped"] }
+        status: { $in: ["Confirmed", "Delivered", "Shipped"] },
       });
       return createResponse(
         res,
         200,
         true,
         "Monthly Sales Date Retrieved Successfully",
-        { month: currentMonth, year: currentYear, sales: DailySales,totalSales,totalOrders }
+        {
+          month: currentMonth,
+          year: currentYear,
+          sales: DailySales,
+          totalSales,
+          totalOrders,
+        }
       );
     }
 
