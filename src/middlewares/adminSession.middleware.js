@@ -1,6 +1,8 @@
 const adminAuthMiddleware = (req, res, next) => {
+  console.log("Session in middleware:", req.session);
   if (req.session&&req.session.isAdmin) {
-     next();
+
+    return next();
   }
   return res.status(403).json({ message: "Access denied. Admins only." });
 };
