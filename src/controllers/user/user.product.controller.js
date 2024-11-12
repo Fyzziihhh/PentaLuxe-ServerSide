@@ -88,7 +88,7 @@ const searchProductsByCategory = async (req, res) => {
 const getRelatedProducts=async(req,res)=>{
   console.log("inside related products")
   try {
-    const categoryName=req.query.category
+    const {categoryName}=req.body
       const category=await Category.findOne({categoryName})
       if(!category){
         return createResponse(res,404,false,"Category Not Found")

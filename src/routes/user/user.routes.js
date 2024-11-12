@@ -81,7 +81,7 @@ router.delete("/address-book/:id", verifyToken, userStatus, DeleteAddress);
 // Product routes with userStatus middleware
 router.get("/products", userStatus, getProducts);
 router.get("/products/:id", productDetails);
-router.get('/related-products',getRelatedProducts)
+router.post('/related-products',getRelatedProducts)
 router.post('/search-products-by-category',searchProductsByCategory)
 
 // Category routes
