@@ -58,7 +58,8 @@ const getAdminDashboard = async (req, res) => {
             ?.totalAmount || 0,
       }));
 
-      console.log(MonthlySales);
+      console.log("Monthly",MonthlySales);
+      console.log("monthly",monthlySales);
       const totalSales = MonthlySales.reduce(
         (acc, sales) => acc + sales.sales,
         0
