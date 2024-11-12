@@ -18,17 +18,22 @@ const getAdminDashboard = async (req, res) => {
       // Aggregate sales data by month
       const monthlySales = await Order.aggregate([
         {
-          $match: { $expr: { $eq: [{ $year: "$orderDate" }, currentYear] } },
-          status: { $in: ["delivered", "confirmed", "shipped"] }
+          $match: {
+            $and: [
+              { status: { $in: ["delivered", "confirmed", "shipped"] } },
+              { $expr: { $eq: [{ $year: "$orderDate" }, currentYear] } }
+            ]
+          }
         },
         {
           $group: {
             _id: { month: { $month: "$orderDate" } },
-            totalAmount: { $sum: "$totalAmount" },
-          },
+            totalAmount: { $sum: "$totalAmount" }
+          }
         },
-        { $sort: { _id: 1 } },
+        { $sort: { "_id.month": 1 } }
       ]);
+      
 
       const totalOrders = (await Order.find()).length;
       // Prepare all months with sales initialized to 0
@@ -73,21 +78,22 @@ const getAdminDashboard = async (req, res) => {
           $match: {
             $expr: {
               $and: [
-                { $eq: [{ $month: "$orderDate" }, currentMonth] },  
-                { $eq: [{ $year: "$orderDate" }, currentYear] }  
+                { $eq: [{ $month: "$orderDate" }, currentMonth] },
+                { $eq: [{ $year: "$orderDate" }, currentYear] },
+                { $in: ["$status", ["delivered", "confirmed", "shipped"]] } // Moved status inside $expr
               ]
-            },
-            status: { $in: ["delivered", "confirmed", "shipped"] }  
+            }
           }
         },
         {
           $group: {
-            _id: { $dayOfMonth: "$orderDate" },
-            totalAmount: { $sum: "$totalAmount" },
-          },
+            _id: { day: { $dayOfMonth: "$orderDate" } },
+            totalAmount: { $sum: "$totalAmount" }
+          }
         },
-        { $sort: { _id: 1 } },
+        { $sort: { "_id.day": 1 } }
       ]);
+      
 
       // Create an array for all days of the month (1 to 31)
       const DailySales = Array.from({ length: 31 }, (_, i) => ({
