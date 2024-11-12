@@ -58,7 +58,7 @@ router.delete("/categories/:id", deleteCategory);
 
 // Product routes
 router.post("/products", uploader.any(), uploadFilesAndAddProducts);
-router.get("/products",adminAuthMiddleware, getAllProducts);
+router.get("/products", getAllProducts);
 router.delete("/products/:id", deleteProduct);
 router.get("/products/:id", singleProudct);
 router.put("/products/:id", uploader.single('file'), updateProduct);
