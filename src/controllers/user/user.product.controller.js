@@ -2,7 +2,7 @@ import Product from "../../models/product.model.js";
 import { asyncHandler } from "../../helpers/asyncHandler.js";
 import { createResponse, serverErrorResponse } from "../../helpers/responseHandler.js";
 import Category from "../../models/category.model.js";
-import { create } from "connect-mongo";
+
 const productDetails = asyncHandler(async (req, res) => {
 
   const { id } = req.params;
