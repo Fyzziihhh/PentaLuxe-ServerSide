@@ -4,7 +4,7 @@ import {
   getCategories,
   deleteCategory,
   uploadFilesAndAddCategory,
-  adminLogOut,
+
 } from "../../controllers/admin/admin.controller.js";
 import { uploader } from "../../middlewares/multer.middlerware.js";
 import {
@@ -39,13 +39,16 @@ import {
   bestSellingProducts,
   getAdminDashboard,
 } from "../../controllers/admin/admin.dashboard.controller.js";
-import adminAuthMiddleware from "../../middlewares/adminSession.middleware.js";
+import adminVerifyToken from "../../middlewares/adminVerifyToken.middleware.js";
 
 const router = express.Router();
 
 // Admin routes
 router.post("/login", adminLogin);
-router.post("/logout", adminLogOut);
+
+
+router.use(adminVerifyToken);
+
 
 // Category routes
 router.post(
@@ -58,7 +61,7 @@ router.delete("/categories/:id", deleteCategory);
 
 // Product routes
 router.post("/products", uploader.any(), uploadFilesAndAddProducts);
-router.get("/products",adminAuthMiddleware, getAllProducts);
+router.get("/products",adminVerifyToken, getAllProducts);
 router.delete("/products/:id", deleteProduct);
 router.get("/products/:id", singleProudct);
 router.put("/products/:id", uploader.single('file'), updateProduct);

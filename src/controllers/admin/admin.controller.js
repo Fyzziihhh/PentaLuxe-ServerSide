@@ -11,18 +11,12 @@ const adminLogin = (req, res) => {
     email === process.env.ADMIN_EMAIL &&
     password === process.env.ADMIN_PASSWORD
   ) {
-    req.session.isAdmin = true;
-    req.session.email=email
-    req.session.save(err => {
-      if (err) {
-        console.error("Session save error:", err);
-        return res.status(500).json({ message: "Session error" });
-      }
-      console.log("Session after login:", req.session);
-    });
+   const token = jwt.sign({email},process.env.ADMIN_TOKEN_SECRET,{expiresIn:process.env.ADMIN_TOKEN_EXPIRY})
+   console.log("admin Token",token)
     return res.status(200).json({
       success: true,
       message: "Admin LoggedIn Successfully",
+      token
     });
   }
 
@@ -123,13 +117,5 @@ const deleteCategory = async (req, res) => {
   }
 };
 
-const adminLogOut = asyncHandler(async (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      return res.status(500).json({ message: "Logout failed" });
-    }
-    res.status(200).json({ message: "Logged out successfully" });
-  });
-});
 
-export { adminLogin, uploadFilesAndAddCategory, getCategories, deleteCategory,adminLogOut };
+export { adminLogin, uploadFilesAndAddCategory, getCategories, deleteCategory };
