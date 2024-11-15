@@ -15,14 +15,14 @@ const adminVerifyToken = async (req, res, next) => {
       if (err) {
         if (err.name === "TokenExpiredError") {
           return res
-            .status(401)
+            .status(403)
             .json({
               success: false,
               message: "Admin Token expired,Please Try Again",
             });
         } else {
           return res
-            .status(401)
+            .status(403)
             .json({
               success: false,
               message: "Access denied: authentication failed",

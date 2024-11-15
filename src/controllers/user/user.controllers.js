@@ -141,6 +141,9 @@ const logOutUser = asyncHandler(async (req, res) => {
 
 const logInUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
+  if(email.trim()==='' || password.trim()===''){
+    return createResponse(res,401,false,"Email and Password are required")
+  }
 
   const user = await User.findOne({ email });
   if (!user) {
