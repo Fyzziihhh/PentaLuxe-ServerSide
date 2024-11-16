@@ -1,14 +1,19 @@
 import Product from "../../models/product.model.js";
 import { asyncHandler } from "../../helpers/asyncHandler.js";
-import { createResponse, serverErrorResponse } from "../../helpers/responseHandler.js";
+import {
+  createResponse,
+  serverErrorResponse,
+} from "../../helpers/responseHandler.js";
 import Category from "../../models/category.model.js";
+import { searchProducts } from "../admin/admin.product.controller.js";
 
 const productDetails = asyncHandler(async (req, res) => {
-
   const { id } = req.params;
   if (!id) return createResponse(res, 404, false, "Product ID is required");
 
-  const product = await Product.findById(id).populate("Variants").populate('CategoryId');
+  const product = await Product.findById(id)
+    .populate("Variants")
+    .populate("CategoryId");
   if (!product)
     return createResponse(
       res,
@@ -58,11 +63,12 @@ const searchProductsByCategory = async (req, res) => {
   }
 
   try {
-    const products = await Product.find({}).populate("CategoryId");
-    const regex = new RegExp(text, "i"); // 'i' is for case-insensitive search
+    const products = await Product.find({}).populate("CategoryId").populate('Variants');
+    const regex = new RegExp(text, "i"); 
     const searchedProducts = products.filter((product) =>
-      product.Name.match(regex)
+      product.CategoryId.categoryName.match(regex)
     );
+    console.log(searchedProducts)
 
     if (!searchedProducts || searchedProducts.length === 0) {
       return res.status(404).json({
@@ -85,21 +91,33 @@ const searchProductsByCategory = async (req, res) => {
   }
 };
 
-const getRelatedProducts=async(req,res)=>{
-  console.log("inside related products")
+const getRelatedProducts = async (req, res) => {
+  console.log("inside related products");
   try {
-    const {categoryName,productID}=req.body
-      const category=await Category.findOne({categoryName})
-      if(!category){
-        return createResponse(res,404,false,"Category Not Found")
-      
-      }
-      const relatedProducts = await Product.find({ CategoryId:category._id }).populate("Variants").populate("CategoryId").limit(3);
-      return createResponse(res,200,true,"related product fetched Successfully",relatedProducts)
+    const { categoryName, productID } = req.body;
+    const category = await Category.findOne({ categoryName });
+    if (!category) {
+      return createResponse(res, 404, false, "Category Not Found");
+    }
+    const relatedProducts = await Product.find({ CategoryId: category._id })
+      .populate("Variants")
+      .populate("CategoryId")
+      .limit(3);
+    return createResponse(
+      res,
+      200,
+      true,
+      "related product fetched Successfully",
+      relatedProducts
+    );
   } catch (error) {
-    serverErrorResponse(res)
+    serverErrorResponse(res);
   }
+};
 
-}
-
-export { productDetails, getProducts, searchProductsByCategory ,getRelatedProducts};
+export {
+  productDetails,
+  getProducts,
+  searchProductsByCategory,
+  getRelatedProducts,
+};
