@@ -91,9 +91,9 @@ const createRazorpayOrder = async (req, res) => {
       key_id: process.env.RAZORPAY_API_KEY,
       key_secret: process.env.RAZORPAY_SECRET_KEY,
     });
-
+ console.log(req.body.totalPrice)
     const options = {
-      amount: req.body.totalPrice * 100,
+      amount: (req.body.totalPrice).toFixed(0) * 100,
       currency: "INR",
     };
 
