@@ -63,7 +63,7 @@ const searchProductsByCategory = async (req, res) => {
   }
 
   try {
-    const products = await Product.find({}).populate("CategoryId").populate('Variants');
+    const products = await Product.find({}).populate("CategoryId").populate("Variants");
     const regex = new RegExp(text, "i"); 
     const searchedProducts = products.filter((product) =>
       product.CategoryId.categoryName.match(regex)
