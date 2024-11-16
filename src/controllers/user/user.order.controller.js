@@ -22,6 +22,7 @@ const getUserOrders = async (req, res) => {
         },
       })
       .sort({ createdAt: -1 });
+      console.log(orders)
     return createResponse(
       res,
       200,

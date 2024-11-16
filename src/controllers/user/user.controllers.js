@@ -172,6 +172,7 @@ console.log("inside the login")
 
 
 const googleAuth = asyncHandler(async (req, res) => {
+  console.log("inside googleAuth")
   const { username, email } = req.body;
 
   const userExist = await User.findOne({ email });

@@ -4,6 +4,7 @@ import {
   getCategories,
   deleteCategory,
   uploadFilesAndAddCategory,
+  EditCategory,
 
 } from "../../controllers/admin/admin.controller.js";
 import { uploader } from "../../middlewares/multer.middlerware.js";
@@ -58,6 +59,9 @@ router.post(
 );
 router.get("/categories", getCategories);
 router.delete("/categories/:id", deleteCategory);
+router.put("/categories", uploader.single("categoryImage"), EditCategory);
+
+
 
 // Product routes
 router.post("/products", uploader.any(), uploadFilesAndAddProducts);

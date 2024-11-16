@@ -3,20 +3,36 @@ import { uploadOnCloudinary } from "../../helpers/cloudinary.js";
 import Category from "../../models/category.model.js";
 import User from "../../models/user.models.js";
 import { asyncHandler } from "../../helpers/asyncHandler.js";
-import { serverErrorResponse } from "../../helpers/responseHandler.js";
+import {
+  createResponse,
+  serverErrorResponse,
+} from "../../helpers/responseHandler.js";
 const adminLogin = (req, res) => {
+  console.log("inside the adminController");
   const { email, password } = req.body;
+  if (email.trim() === "") {
+    return res
+      .status(404)
+      .json({ success: false, message: "Email is required" });
+  }
+  if (password.trim() === "") {
+    return res
+      .status(404)
+      .json({ success: false, message: "Password is required" });
+  }
 
   if (
     email === process.env.ADMIN_EMAIL &&
     password === process.env.ADMIN_PASSWORD
   ) {
-   const token = jwt.sign({email},process.env.ADMIN_TOKEN_SECRET,{expiresIn:process.env.ADMIN_TOKEN_EXPIRY})
-   console.log("admin Token",token)
+    const token = jwt.sign({ email }, process.env.ADMIN_TOKEN_SECRET, {
+      expiresIn: process.env.ADMIN_TOKEN_EXPIRY,
+    });
+    console.log("admin Token", token);
     return res.status(200).json({
       success: true,
       message: "Admin LoggedIn Successfully",
-      token
+      token,
     });
   }
 
@@ -38,7 +54,6 @@ const uploadFilesAndAddCategory = async (req, res) => {
   const category = await Category.findOne({
     categoryName: { $regex: new RegExp(categoryName, "i") },
   });
-  console.log("catedf", category);
   if (category) {
     return res.status(409).json({
       success: true,
@@ -69,7 +84,6 @@ const uploadFilesAndAddCategory = async (req, res) => {
 
 const getCategories = async (req, res) => {
   try {
-
     const categories = await Category.find().sort({ createdAt: -1 });
     if (!categories || categories.length === 0)
       return res.status(404).json({
@@ -83,7 +97,7 @@ const getCategories = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    serverErrorResponse(res)
+    serverErrorResponse(res);
   }
 };
 
@@ -104,18 +118,68 @@ const deleteCategory = async (req, res) => {
         .json({ success: false, message: "Category not found" });
     }
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Category deleted successfully",
-        deletedCategory,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Category deleted successfully",
+      deletedCategory,
+    });
   } catch (error) {
     console.error("Error deleting category:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
+const EditCategory = async (req, res) => {
+  const { categoryName,categoryId } = req.body;
+  console.log("req.body", req.body);
+  console.log(req.file);
+  if (categoryName.trim() === "") {
+    return createResponse(res, 400, false, "Category Name is Required");
+  }
+  try {
+    const existCategory=await Category.findOne({categoryName})
+    if(existCategory) return createResponse(res,409,false,"Category Already Exist With The Given Name")
+    const category = await Category.findById(categoryId);
+   
+  if (!category) {
+    return createResponse(res, 404, false, "No Category Founded");
+  }
 
-export { adminLogin, uploadFilesAndAddCategory, getCategories, deleteCategory };
+  if (req.file) {
+    const response = await uploadOnCloudinary(req.file);
+    console.log("inside edit categoryEdit Upload", response);
+    category.categoryName = categoryName;
+    category.categoryImage = response[0];
+    await category.save();
+    console.log(category)
+    return createResponse(
+      res,
+      200,
+      true,
+      "Category Updated Successfully",
+      category
+    );
+  }
+  console.log('lsjldk')
+  category.categoryName = categoryName;
+  await category.save();
+  return createResponse(
+    res,
+    200,
+    true,
+    "Category Updated Successfully",
+    category
+  );
+  } catch (error) {
+    console.log(error)
+    serverErrorResponse(res)
+  }
+};
+
+export {
+  adminLogin,
+  uploadFilesAndAddCategory,
+  getCategories,
+  deleteCategory,
+  EditCategory,
+};
