@@ -160,7 +160,7 @@ const EditCategory = async (req, res) => {
       category
     );
   }
-  console.log('lsjldk')
+ 
   category.categoryName = categoryName;
   await category.save();
   return createResponse(

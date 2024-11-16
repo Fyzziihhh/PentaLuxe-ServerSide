@@ -142,6 +142,7 @@ const getAdminDashboard = async (req, res) => {
 const bestSellingProducts = async (req, res) => {
   try {
     const products = await Order.aggregate([
+      {$match:{status:{$in:["Delivered","Confirmed","Shipped"]}}},
       { $unwind: "$items" },
       {
         $group: {
@@ -155,7 +156,6 @@ const bestSellingProducts = async (req, res) => {
     if (products.length === 0) {
       return createResponse(res, 404, "No products found");
     }
-    console.log(products);
     return createResponse(
       res,
       200,
@@ -171,6 +171,7 @@ const bestSellingProducts = async (req, res) => {
 const bestSellingCategories = async (req, res) => {
   try {
     const categories = await Order.aggregate([
+      {$match:{status:{$in:["Delivered","Confirmed","Shipped"]}}},
       { $unwind: "$items" },
       {
         $group: {

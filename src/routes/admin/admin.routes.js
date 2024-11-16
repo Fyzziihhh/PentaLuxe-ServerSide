@@ -65,7 +65,7 @@ router.put("/categories", uploader.single("categoryImage"), EditCategory);
 
 // Product routes
 router.post("/products", uploader.any(), uploadFilesAndAddProducts);
-router.get("/products",adminVerifyToken, getAllProducts);
+router.get("/products", getAllProducts);
 router.delete("/products/:id", deleteProduct);
 router.get("/products/:id", singleProudct);
 router.put("/products/:id", uploader.single('file'), updateProduct);

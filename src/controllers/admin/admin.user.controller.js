@@ -46,7 +46,7 @@ const updateUserStatus = asyncHandler(async (req, res) => {
 
 
 const searchUsers = async (req, res) => {
-  
+  console.log('Inside the admin user search')
   const { text } = req.body;
   console.log(text)
 
@@ -58,7 +58,8 @@ const searchUsers = async (req, res) => {
   }
 
   try {
-    const users = await User.find({ username: new RegExp(text, "i") });
+    const users = await User.find({ username: new RegExp(text, "i") }).populate('addresses')
+    .select("username email status phone addresses");
     console.log(users)
 
     if (!users || users.length === 0) {
