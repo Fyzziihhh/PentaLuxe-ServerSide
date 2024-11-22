@@ -63,7 +63,7 @@ router.post("/register", registerUser);
 router.post("/otp-verify", VerifyOtp);
 router.post("/resend-otp", resendOtp);
 router.post("/logout", verifyToken, logOutUser);
-router.post("/login", logInUser);
+router.post("/login",logInUser);
 router.post("/google-auth", googleAuth);
 
 // User profile routes with userStatus middleware

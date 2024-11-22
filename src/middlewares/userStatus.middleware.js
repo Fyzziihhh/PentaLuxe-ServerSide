@@ -19,6 +19,7 @@ import jwt from "jsonwebtoken";
       
       const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
       const user = await User.findById(decoded._id);
+      console.log("User inside the UserStatus Middleware",user)
       
       if (!user) {
       console.log(decoded)

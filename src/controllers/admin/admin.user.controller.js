@@ -2,7 +2,7 @@ import User from "../../models/user.models.js";
 import { asyncHandler } from "../../helpers/asyncHandler.js";
 
 const getAllUser = asyncHandler(async (req, res) => {
-  const users = await User.find().populate('addresses')
+  const users = await User.find({isVerified:true}).populate('addresses')
      .select("username email status phone addresses")
      .sort({ createdAt: -1 });
   console.log("usersInAdminCOnt", users);

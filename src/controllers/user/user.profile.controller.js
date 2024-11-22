@@ -12,6 +12,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
     email: user.email,
     username: user.username,
     phone: user.phone || null,
+    isPassword:user.password?true:false
   });
 });
 
@@ -177,20 +178,27 @@ const changePassword = async (req, res) => {
   const { currentPassword, newPassword } = req.body;
   const user = req.user;
 
-  if (!currentPassword || !newPassword) {
-    return createResponse(res, 400, false, "Current and new passwords are required.");
+  if (user.password&& !currentPassword) {
+    return createResponse(res, 400, false, "Current password is required.");
   }
+  if (!user.password&& !newPassword) {
+    return createResponse(res, 400, false, "New password is required.");
+  }
+  
 
   try {
     // Verify the current password
-    const isMatch = await user.isPasswordCorrect(currentPassword);
-    if (!isMatch) {
-      return createResponse(res, 401, false, "Current password is incorrect.");
-    }
+ if(user.password){
 
+   const isMatch = await user.isPasswordCorrect(currentPassword);
+   if (!isMatch) {
+     return createResponse(res, 400, false, "Current password is incorrect.");
+   }
+ }
     // Update the password if current password matches
     user.password = newPassword;
     await user.save();
+    console.log(user)
 
     return createResponse(res, 200, true, "Password changed successfully.");
   } catch (error) {

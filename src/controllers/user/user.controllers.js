@@ -146,6 +146,9 @@ const logInUser = asyncHandler(async (req, res) => {
   }
 
   const user = await User.findOne({ email });
+  if(!user.password){
+    return createResponse(res, 400, false, "You can Try another login Method");
+  }
   if (!user) {
     return createResponse(res, 404, false, "Invalid Email Or Password");
   }
@@ -153,8 +156,11 @@ const logInUser = asyncHandler(async (req, res) => {
   if (!user.isVerified) {
     return createResponse(res, 401, false, "Please verify your email to activate your account");
   }
+  if(user.status==="BLOCKED") return createResponse(res, 401, false, "User Account Has been Blocked")
 
-  const isMatch = user.isPasswordCorrect(password);
+
+    const isMatch = await user.isPasswordCorrect(password);
+ 
   if (!isMatch) {
     return createResponse(res, 401, false, "Invalid Email Or Password");
   }
@@ -176,8 +182,10 @@ const googleAuth = asyncHandler(async (req, res) => {
   const { username, email } = req.body;
 
   const userExist = await User.findOne({ email });
+  
 
   if (userExist) {
+    if(userExist.status==="BLOCKED") return createResponse(res, 401, false, "User Account Has been Blocked")
     try {
       const { accessToken, refreshToken } =
         await generateAccesTokenAndRefreshToken(userExist._id);
