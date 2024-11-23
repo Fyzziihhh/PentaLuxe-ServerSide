@@ -7,6 +7,9 @@ import {
   VerifyOtp,
   logInUser,
   googleAuth,
+  sendResetOTP,
+  verifyResetOTP,
+  ResetPassword
 } from "../../controllers/user/user.controllers.js";
 import verifyToken from "../../middlewares/verifyToken.middlerware.js";
 import userStatus from "../../middlewares/userStatus.middleware.js"; // Make sure the path is correct
@@ -65,6 +68,10 @@ router.post("/resend-otp", resendOtp);
 router.post("/logout", verifyToken, logOutUser);
 router.post("/login",logInUser);
 router.post("/google-auth", googleAuth);
+router.post('/send-rest-otp', sendResetOTP);
+router.post('/verfiy-rest-otp', verifyResetOTP);
+router.patch('/reset-password', ResetPassword);
+
 
 // User profile routes with userStatus middleware
 router.get("/profile", verifyToken, userStatus, getUserProfile);

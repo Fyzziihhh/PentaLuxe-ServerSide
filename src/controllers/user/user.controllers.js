@@ -6,7 +6,7 @@ import { asyncHandler } from "../../helpers/asyncHandler.js";
 import { sendOTPEmail } from "../../helpers/EmailOTPSender.js";
 import { generateOtp } from "../../utils/GenerateOtp.js";
 import { generateAccesTokenAndRefreshToken } from "../../helpers/GenerateTokens.js";
-import { createResponse } from "../../helpers/responseHandler.js";
+import { createResponse, serverErrorResponse } from "../../helpers/responseHandler.js";
 
 // @desc Register a new user
 // @route POST /api/register
@@ -140,12 +140,15 @@ const logOutUser = asyncHandler(async (req, res) => {
 });
 
 const logInUser = asyncHandler(async (req, res) => {
+
   const { email, password } = req.body;
+  console.log(email,password)
   if(email.trim()==='' || password.trim()===''){
     return createResponse(res,401,false,"Email and Password are required")
   }
 
   const user = await User.findOne({ email });
+  console.log(user)
   if(!user.password){
     return createResponse(res, 400, false, "You can Try another login Method");
   }
@@ -158,7 +161,10 @@ const logInUser = asyncHandler(async (req, res) => {
   }
   if(user.status==="BLOCKED") return createResponse(res, 401, false, "User Account Has been Blocked")
 
-
+//  if(password!==user.password){
+//  console.log('hel')
+//   return
+//  }
     const isMatch = await user.isPasswordCorrect(password);
  
   if (!isMatch) {
@@ -221,6 +227,66 @@ const googleAuth = asyncHandler(async (req, res) => {
 });
 
 
+
+const sendResetOTP=async(req,res)=>{
+ try {
+   console.log('inside the forgot password')
+   const {email}=req.body
+    const user=await User.findOne({email})
+     if(!user){
+     return createResponse(res,404,false,"No User Founded With this Email")
+     }
+     const otp = generateOtp(4);
+     user.otp = otp;
+     await user.save();
+     await sendOTPEmail(email, otp);
+     
+     return createResponse(res,200,true,"OTP sended Successfully")
+ } catch (error) {
+    serverErrorResponse(res)
+ }
+
+}
+
+
+const verifyResetOTP=async(req,res)=>{
+ 
+const{otp,email}=req.body
+const user=await User.findOne({email})
+if(!user){
+  return createResponse(res,404,false,"No User Founded With this Email")
+  }
+  console.log(otp,user.otp)
+ if(user.otp!==otp){
+ return createResponse(res,400,false,"Invalid OTP. Please try again.")
+ }
+ user.otp=null
+ await user.save()
+ return createResponse(res,200,true,"OTP Verified Successfully✅")
+}
+
+
+const ResetPassword=async(req,res)=>{
+  console.log('inside the resetPass')
+  try {
+    const {email,newPassword}=req.body
+    const user=await User.findOne({email})
+    if(!user){
+      return createResponse(res,404,false,"No User Founded With this Email")
+      }
+   user.password=newPassword
+   await user.save()  
+   
+   return createResponse(res,200,true,"Password Changed Successfully✅")
+   
+  } catch (error) {
+    serverErrorResponse(res)
+  }
+
+
+}
+
+
 export {
   registerUser,
   VerifyOtp,
@@ -228,4 +294,7 @@ export {
   logOutUser,
   logInUser,
   googleAuth,
+  sendResetOTP,
+  verifyResetOTP,
+  ResetPassword
 };
