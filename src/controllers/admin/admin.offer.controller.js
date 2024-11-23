@@ -3,6 +3,7 @@ import {
   createResponse,
   serverErrorResponse,
 } from "../../helpers/responseHandler.js";
+import Offer from "../../models/offer.model.js";
 import Product from "../../models/product.model.js";
 
 const processProductOffer = async (req, res) => {
@@ -11,15 +12,24 @@ const processProductOffer = async (req, res) => {
   console.log(req.body);
 
   try {
+    const offer=await Offer.create({
+      DiscountPercentage,
+      offerType:"Product",
+      offerFor:itemId
+
+    })
+    console.log("offer",offer)
     const product = await Product.findByIdAndUpdate(
       itemId,
       { DiscountPercentage },
       { new: true }
     );
 
+
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
+     
 
     console.log("Updated Product", product);
     return createResponse(
@@ -52,6 +62,13 @@ const processCategoryOffer = async (req, res) => {
         await product.save();
       })
     );
+    const offer=await Offer.create({
+      DiscountPercentage,
+      offerType:"Category",
+      offerFor:itemId
+
+    })
+    console.log("categoryOffer",offer)
 
     return createResponse(
       res,
@@ -64,4 +81,13 @@ const processCategoryOffer = async (req, res) => {
   }
 };
 
-export { processProductOffer, processCategoryOffer };
+const ListOffers=async(req,res)=>{
+  const offers=await Offer.find().populate('offerFor').sort({createdAt:-1})
+  console.log(offers)
+
+  return createResponse(res,200,true,"Offers retrieved Successfully",offers)
+
+
+}
+
+export { processProductOffer, processCategoryOffer ,ListOffers};

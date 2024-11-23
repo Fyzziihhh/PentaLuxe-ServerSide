@@ -22,7 +22,7 @@ const getUserOrders = async (req, res) => {
         },
       })
       .sort({ createdAt: -1 });
-      console.log(orders)
+    orders.forEach((order)=>console.log(order.items))
     return createResponse(
       res,
       200,
@@ -54,7 +54,8 @@ const cancelOrReturnOrder = async (req, res) => {
       );
     }
 
-    const order = await Order.findById(id);
+    const order = await Order.findById(id)
+    console.log(order)
 
     if (!order) {
       return createResponse(res, 404, false, "Order not found.");
@@ -151,7 +152,31 @@ const cancelOrReturnOrder = async (req, res) => {
       order.status = "Returned";
       order.returnReason = reason;
     }
+   
+    await Promise.all(
+      order.items.map(async (item) => {
+        const product = await Product.findById(item.productId).populate(
+          "Variants"
+        );
 
+        const variant = product.Variants.find(
+          (variant) =>
+            variant.price -
+              (variant.price * item.discountPercentage) / 100 ===
+            item.price
+        );
+
+        if (!variant) {
+          throw new Error(`Variant not found for ${product.Name}`);
+        }
+
+        // Update stock
+        variant.stock += item.quantity;
+        await Variant.findByIdAndUpdate(variant._id, {
+          stock: variant.stock,
+        });
+      })
+    );
     // Save the updated order
     await order.save();
 

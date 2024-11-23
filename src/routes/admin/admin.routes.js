@@ -31,6 +31,7 @@ import {
   getAllCoupons,
 } from "../../controllers/admin/admin.coupon.controller.js";
 import {
+  ListOffers,
   processCategoryOffer,
   processProductOffer,
 } from "../../controllers/admin/admin.offer.controller.js";
@@ -90,6 +91,7 @@ router.delete("/coupon/:id", deleteCoupon);
 // Offer
 router.patch("/product-offer", processProductOffer);
 router.patch("/category-offer", processCategoryOffer);
+router.get('/offers',ListOffers)
 
 // Sales report
 router.post("/sales-report", generateSalesReport);

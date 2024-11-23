@@ -5,7 +5,8 @@ const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find()
       .populate("user")
-      .populate("shippingAddress");
+      .populate("shippingAddress")
+      .sort({createAt:-1});
     console.log(orders);
 
     res.status(200).json({ success: true, orders });
