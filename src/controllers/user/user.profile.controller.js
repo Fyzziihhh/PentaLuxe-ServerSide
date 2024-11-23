@@ -175,10 +175,8 @@ console.log(address)
 
 
 const changePassword = async (req, res) => {
-  console.log("inside the changepass")
   const { currentPassword, newPassword } = req.body;
   const user = req.user;
-
 
   if (user.password&& !currentPassword) {
     return createResponse(res, 400, false, "Current password is required.");
@@ -186,13 +184,12 @@ const changePassword = async (req, res) => {
   if (!user.password&& !newPassword) {
     return createResponse(res, 400, false, "New password is required.");
   }
- 
   
 
   try {
     // Verify the current password
- 
  if(user.password){
+
    const isMatch = await user.isPasswordCorrect(currentPassword);
    if (!isMatch) {
      return createResponse(res, 400, false, "Current password is incorrect.");

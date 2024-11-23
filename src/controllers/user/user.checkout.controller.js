@@ -7,7 +7,6 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import { createResponse } from "../../helpers/responseHandler.js";
 import Wallet from "../../models/wallet.model.js";
-import Coupon from "../../models/coupon.model.js";
 
 const createRazorpayOrder = async (req, res) => {
   try {
@@ -147,9 +146,6 @@ const createOrder = async (
     orderId += Math.floor(Math.random() * 10);
   }
   console.log(couponCode);
- 
-   await Coupon.findOneAndUpdate({couponName:couponCode},{$push:{users:userId}})
-
   const order = await Order.create({
     _id: orderId,
     user: userId,
