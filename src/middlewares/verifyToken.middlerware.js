@@ -12,7 +12,7 @@ const verifyToken = asyncHandler(async (req, res, next) => {
         res,
         401,
         false,
-        "Not Authorized, No Token Provided"
+        "Not Authorized, Please Log In"
       );
     }
 
@@ -43,7 +43,7 @@ const verifyToken = asyncHandler(async (req, res, next) => {
       );
     }
   } else {
-    createResponse(res, 401, false, "Not Authorized, No Token Provided");
+    createResponse(res, 401, false, "Not Authorized, Please Logged In");
   }
 });
 
